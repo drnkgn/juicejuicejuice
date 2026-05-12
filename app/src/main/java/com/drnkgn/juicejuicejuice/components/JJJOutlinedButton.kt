@@ -23,12 +23,14 @@ import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
 
 @Composable
 fun JJJOutlinedButton(
+    enabled: Boolean = true,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     shape: Shape = RoundedCornerShape(10.dp),
     children: @Composable () -> Unit
 ) {
     OutlinedButton(
+        enabled = enabled,
         modifier = modifier,
         shape = shape,
         border = BorderStroke(
@@ -50,6 +52,7 @@ fun JJJOutlinedButton(
 fun JJJOutlinedButtonPreview() {
     JuiceJuiceJuiceTheme {
         JJJOutlinedButton(
+            enabled = false,
             onClick = { }
         ) { Text("Click Me") }
     }

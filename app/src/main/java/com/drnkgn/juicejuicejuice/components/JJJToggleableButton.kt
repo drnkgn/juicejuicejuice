@@ -8,6 +8,7 @@ import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
 
 @Composable
 fun JJJToggleableButton(
+    enabled: Boolean = true,
     modifier: Modifier = Modifier,
     toggled: Boolean = false,
     onClick: () -> Unit,
@@ -15,6 +16,7 @@ fun JJJToggleableButton(
 ) {
     if (toggled) {
         JJJButton(
+            enabled = enabled,
             modifier = modifier,
             colors = JJJButtonColors.Primary,
             onClick = onClick,
@@ -22,6 +24,7 @@ fun JJJToggleableButton(
         )
     } else {
         JJJOutlinedButton(
+            enabled = enabled,
             modifier = modifier,
             onClick = onClick,
             children = children

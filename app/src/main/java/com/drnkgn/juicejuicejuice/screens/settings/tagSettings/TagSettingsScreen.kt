@@ -27,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -151,12 +152,21 @@ fun TagSettingsContent(
                         ) {
                             expenseTags.forEach { tag ->
                                 ClickableTag(
-                                    variant = ClickableTagVariant.Inverse,
+                                    variant = when {
+                                        tag.deletedAt === null -> ClickableTagVariant.Inverse
+                                        else -> ClickableTagVariant.Outline
+                                    },
                                     onClick = {
                                         navController.navigate("settings/tags/edit/${tag.id}")
                                     }
                                 ) {
-                                    Text(tag.name)
+                                    Text(
+                                        tag.name,
+                                        textDecoration = when {
+                                            tag.deletedAt === null -> null
+                                            else -> TextDecoration.LineThrough
+                                        }
+                                    )
                                 }
                             }
                         }

@@ -8,6 +8,8 @@ import com.drnkgn.juicejuicejuice.enums.UiState
 import com.drnkgn.juicejuicejuice.utils.UiStateHolder
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @HiltViewModel
@@ -18,13 +20,14 @@ class TagSettingsViewModel @Inject constructor(
 
     val createTagState = UiStateHolder<Unit>(UiState.Idle)
     val updateTagState = UiStateHolder<Unit>(UiState.Idle)
+    val removeTagState = UiStateHolder<Unit>(UiState.Idle)
     val getTagState = UiStateHolder<Tag>(UiState.Idle)
     val getAllTagsState = UiStateHolder<List<Tag>>(UiState.Idle)
 
     fun getAllTags() {
         viewModelScope.launch {
             getAllTagsState.set(UiState.Loading)
-            getAllTagsState.set(UiState.Success(tagDao.getAllTags()))
+            getAllTagsState.set(UiState.Success(tagDao.getAllTagsWithTrashed()))
         }
     }
 
@@ -42,6 +45,11 @@ class TagSettingsViewModel @Inject constructor(
             tagDao.update(tag)
             updateTagState.set(UiState.Success(Unit))
         }
+    }
+
+    fun removeTag(tag: Tag) {
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        updateTag(tag.copy(deletedAt = formatter.format(LocalDateTime.now())))
     }
 
     fun getTag(id: Int) {
