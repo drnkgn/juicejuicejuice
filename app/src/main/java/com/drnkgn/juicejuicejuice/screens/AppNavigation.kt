@@ -6,6 +6,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -24,54 +26,58 @@ import com.drnkgn.juicejuicejuice.screens.transactions.editTransaction.EditTrans
 fun AppNavigation() {
     val navController = rememberNavController()
 
-    NavHost(
-        navController,
-        startDestination = "main",
-        enterTransition = {
-            slideInVertically(
-                initialOffsetY = { it / 4 },
-                animationSpec = tween(400, easing = FastOutSlowInEasing)
-            ) + fadeIn(tween(400))
-        },
-        exitTransition = {
-            slideOutVertically(
-                targetOffsetY = { -it / 4 },
-                animationSpec = tween(400)
-            ) + fadeOut(tween(200))
-        },
-        popEnterTransition = {
-            slideInVertically(
-                initialOffsetY = { -it / 4 },
-                animationSpec = tween(400)
-            ) + fadeIn(tween(400))
-        },
-        popExitTransition = {
-            slideOutVertically(
-                targetOffsetY = { it / 4 },
-                animationSpec = tween(400)
-            ) + fadeOut(tween(400))
-        }
+    Surface(
+        color = MaterialTheme.colorScheme.background
     ) {
-        composable("main") { OverviewScreen(navController) }
+        NavHost(
+            navController,
+            startDestination = "main",
+            enterTransition = {
+                slideInVertically(
+                    initialOffsetY = { it / 4 },
+                    animationSpec = tween(400, easing = FastOutSlowInEasing)
+                ) + fadeIn(tween(400))
+            },
+            exitTransition = {
+                slideOutVertically(
+                    targetOffsetY = { -it / 4 },
+                    animationSpec = tween(400)
+                ) + fadeOut(tween(200))
+            },
+            popEnterTransition = {
+                slideInVertically(
+                    initialOffsetY = { -it / 4 },
+                    animationSpec = tween(400)
+                ) + fadeIn(tween(400))
+            },
+            popExitTransition = {
+                slideOutVertically(
+                    targetOffsetY = { it / 4 },
+                    animationSpec = tween(400)
+                ) + fadeOut(tween(400))
+            }
+        ) {
+            composable("main") { OverviewScreen(navController) }
 
-        composable("transactions/new") { NewTransactionScreen(navController) }
-        composable(
-            route = "transactions/edit/{id}",
-            arguments = listOf(navArgument("id") { type = NavType.IntType })
-        ) { backStackEntry ->
-            EditTransactionScreen(navController, transactionId = backStackEntry.arguments?.getInt("id"))
-        }
+            composable("transactions/new") { NewTransactionScreen(navController) }
+            composable(
+                route = "transactions/edit/{id}",
+                arguments = listOf(navArgument("id") { type = NavType.IntType })
+            ) { backStackEntry ->
+                EditTransactionScreen(navController, transactionId = backStackEntry.arguments?.getInt("id"))
+            }
 
-        composable("settings") { SettingsScreen(navController) }
-        composable("settings/tags") { TagSettingsScreen(navController) }
-        composable("settings/tags/new") {
-            NewTagScreen(navController)
-        }
-        composable(
-            route = "settings/tags/edit/{id}",
-            arguments = listOf(navArgument("id") { type = NavType.IntType })
-        ) { backStackEntry ->
-            EditTagScreen(navController, tagId = backStackEntry.arguments?.getInt("id"))
+            composable("settings") { SettingsScreen(navController) }
+            composable("settings/tags") { TagSettingsScreen(navController) }
+            composable("settings/tags/new") {
+                NewTagScreen(navController)
+            }
+            composable(
+                route = "settings/tags/edit/{id}",
+                arguments = listOf(navArgument("id") { type = NavType.IntType })
+            ) { backStackEntry ->
+                EditTagScreen(navController, tagId = backStackEntry.arguments?.getInt("id"))
+            }
         }
     }
 }

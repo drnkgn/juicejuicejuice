@@ -2,6 +2,7 @@ package com.drnkgn.juicejuicejuice.screens.transactions
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -28,7 +29,7 @@ import com.drnkgn.juicejuicejuice.db.entities.Tag
 import com.drnkgn.juicejuicejuice.fakes.FakeTags
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun SelectTagBottomSheet(
     open: Boolean = true,
@@ -117,7 +118,7 @@ fun SelectTagBottomSheetPreview() {
     JuiceJuiceJuiceTheme {
         val tags = FakeTags.tags.toList()
         val selectedTags = tags.toMutableList()
-        selectedTags.removeFirst()
+        selectedTags.removeAt(0)
 
         SelectTagBottomSheet(
             tags = tags,

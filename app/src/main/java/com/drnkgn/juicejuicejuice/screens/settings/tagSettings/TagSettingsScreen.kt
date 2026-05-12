@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -56,6 +57,7 @@ fun TagSettingsScreen(
     TagSettingsContent(navController, getAllTagsState)
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TagSettingsContent(
     navController: NavController,
