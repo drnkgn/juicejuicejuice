@@ -18,6 +18,7 @@ import com.drnkgn.juicejuicejuice.ui.theme.extColors
 
 @Composable
 fun JJJTextField(
+    enabled: Boolean = true,
     modifier: Modifier = Modifier,
     value: String = "",
     isError: Boolean = false,
@@ -27,6 +28,7 @@ fun JJJTextField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default
 ) {
     TextField(
+        enabled = enabled,
         modifier = modifier
             .fillMaxWidth(),
         shape = RoundedCornerShape(10.dp),
@@ -35,6 +37,7 @@ fun JJJTextField(
             unfocusedIndicatorColor = Color.Transparent,
             unfocusedContainerColor = MaterialTheme.colorScheme.tertiary,
             errorIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent,
             errorContainerColor = MaterialTheme.extColors.inputBgError.copy(alpha = 0.2f)
         ),
         isError = isError,

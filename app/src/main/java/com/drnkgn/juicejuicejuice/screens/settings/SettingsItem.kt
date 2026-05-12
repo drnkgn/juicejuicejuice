@@ -37,7 +37,7 @@ fun SettingsItem(
         modifier = Modifier
             .background(
                 color = MaterialTheme.colorScheme.tertiary,
-                shape = RoundedCornerShape(10.dp)
+                shape = RoundedCornerShape(20.dp)
             )
             .padding(10.dp)
             .height(50.dp)

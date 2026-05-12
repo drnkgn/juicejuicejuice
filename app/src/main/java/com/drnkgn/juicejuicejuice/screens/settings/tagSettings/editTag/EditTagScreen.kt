@@ -1,11 +1,13 @@
 package com.drnkgn.juicejuicejuice.screens.settings.tagSettings.editTag
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
@@ -14,7 +16,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingDown
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -33,16 +39,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.drnkgn.juicejuicejuice.components.FormColumn
 import com.drnkgn.juicejuicejuice.components.JJJButton
 import com.drnkgn.juicejuicejuice.components.JJJButtonColors
 import com.drnkgn.juicejuicejuice.components.JJJTextField
 import com.drnkgn.juicejuicejuice.components.JJJToggleableButton
 import com.drnkgn.juicejuicejuice.db.entities.Tag
+import com.drnkgn.juicejuicejuice.db.entities.toUiState
 import com.drnkgn.juicejuicejuice.enums.TransactionType
 import com.drnkgn.juicejuicejuice.enums.UiState
 import com.drnkgn.juicejuicejuice.fakes.FakeTags
 import com.drnkgn.juicejuicejuice.screens.settings.tagSettings.TagSettingsViewModel
+import com.drnkgn.juicejuicejuice.states.TagUIState
+import com.drnkgn.juicejuicejuice.states.toEntity
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
 import com.drnkgn.juicejuicejuice.ui.theme.extColors
 
@@ -54,6 +64,7 @@ fun EditTagScreen(
 ) {
     val getTagState by tagSettingsViewModel.getTagState.toCollect()
     val updateTagState by tagSettingsViewModel.updateTagState.toCollect()
+    val removeTagState by tagSettingsViewModel.removeTagState.toCollect()
 
     when (updateTagState) {
         is UiState.Success<*> -> {
@@ -67,45 +78,90 @@ fun EditTagScreen(
     }
 
     EditTagContent(
+        navController = navController,
         getTagState = getTagState,
         updateTagState = updateTagState,
-        onUpdateTag = { tag -> tagSettingsViewModel.updateTag(tag)}
+        removeTagState = removeTagState,
+        onUpdateTag = { tag -> tagSettingsViewModel.updateTag(tag) },
+        onRemoveTag = { tag -> tagSettingsViewModel.removeTag(tag) }
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditTagContent(
+    navController: NavController,
     getTagState: UiState<Tag> = UiState.Idle,
     updateTagState: UiState<Unit> = UiState.Idle,
-    onUpdateTag: (Tag) -> Unit
+    removeTagState: UiState<Unit> = UiState.Idle,
+    onUpdateTag: (Tag) -> Unit,
+    onRemoveTag: (Tag) -> Unit
 ) {
-    var tagId by remember { mutableStateOf(-1) }
-    var tagType by remember { mutableStateOf(TransactionType.Expense) }
-    var tagName by remember { mutableStateOf("")}
+    var tag by remember { mutableStateOf(TagUIState(-1, "", TransactionType.Expense)) }
+
+    var moreOptionExpanded by remember { mutableStateOf(false) }
+    var removeTagDialogOpened by remember { mutableStateOf(false) }
 
     LaunchedEffect(getTagState) {
         when (getTagState) {
             is UiState.Success -> {
-                tagId = getTagState.data.id
-                tagName = getTagState.data.name
-                tagType = getTagState.data.type
+                tag = getTagState.data.toUiState()
             }
             else -> { }
         }
     }
 
+    when (removeTagState) {
+        is UiState.Success -> {
+            removeTagDialogOpened = false
+            navController.popBackStack()
+        }
+        else -> {}
+    }
+
     Scaffold(
         topBar = {
-            Box(
+            Row(
                 modifier = Modifier
                     .padding(top = 20.dp)
                     .padding(horizontal = 20.dp)
                     .windowInsetsPadding(WindowInsets.systemBars)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    "Edit Tag",
+                    "Edit Tag ${if (tag.deletedAt !== null) "(Deleted)" else ""}",
                     fontWeight = FontWeight.Bold, fontSize = 26.sp
                 )
+                if (tag.deletedAt === null) {
+                    Box {
+                        Icon(
+                            Icons.Filled.MoreVert,
+                            contentDescription = "more",
+                            modifier = Modifier.clickable { moreOptionExpanded = true }
+                        )
+                        DropdownMenu(
+                            expanded = moreOptionExpanded,
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            shape = RoundedCornerShape(20.dp),
+                            onDismissRequest = { moreOptionExpanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        "Remove tag",
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                },
+                                onClick = {
+                                    moreOptionExpanded = false
+                                    removeTagDialogOpened = true
+                                }
+                            )
+                        }
+                    }
+                }
             }
         },
     ) { innerPadding ->
@@ -127,9 +183,12 @@ fun EditTagContent(
                                 horizontalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
                                 JJJToggleableButton(
-                                    toggled = tagType == TransactionType.Income,
+                                    toggled = tag.type == TransactionType.Income,
                                     modifier = Modifier.weight(1f),
-                                    onClick = { tagType = TransactionType.Income }
+                                    onClick = {
+                                        if (tag.deletedAt === null)
+                                            tag = tag.copy(type = TransactionType.Income)
+                                    }
                                 ) {
                                     Row(
                                         horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -143,9 +202,12 @@ fun EditTagContent(
                                     }
                                 }
                                 JJJToggleableButton(
-                                    toggled = tagType == TransactionType.Expense,
+                                    toggled = tag.type == TransactionType.Expense,
                                     modifier = Modifier.weight(1f),
-                                    onClick = { tagType = TransactionType.Expense }
+                                    onClick = {
+                                        if (tag.deletedAt === null)
+                                            tag = tag.copy(type = TransactionType.Expense)
+                                    }
                                 ) {
                                     Row(
                                         horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -163,28 +225,29 @@ fun EditTagContent(
                         FormColumn("Name") {
                             JJJTextField(
                                 // isError = !error.isEmpty(),
+                                enabled = tag.deletedAt === null,
                                 placeholder = {
                                     Text(
                                         "Tag name",
                                         color = MaterialTheme.extColors.placeholder
                                     )
                                 },
-                                value = tagName,
+                                value = tag.name,
                                 onValueChange = {
-                                    tagName = it
+                                    tag = tag.copy(name = it)
                                 }
                             )
                         }
                     }
                     Row {
                         JJJButton(
-                            enabled = updateTagState !is UiState.Loading,
+                            enabled = updateTagState !is UiState.Loading && tag.deletedAt === null,
                             shape = RoundedCornerShape(10.dp),
                             colors = JJJButtonColors.Primary,
                             modifier = Modifier.weight(1f),
                             onClick = {
                                 onUpdateTag(
-                                    Tag(id = tagId, name = tagName, type = tagType)
+                                    tag.toEntity()
                                 )
                             }
                         ) {
@@ -207,6 +270,15 @@ fun EditTagContent(
                             }
                         }
                     }
+                    RemoveTagDialog(
+                        open = removeTagDialogOpened,
+                        tag = tag,
+                        isLoading = updateTagState is UiState.Loading,
+                        onConfirm = {
+                            onRemoveTag(tag.toEntity())
+                        },
+                        onClose = { removeTagDialogOpened = false }
+                    )
                 }
             } else if (getTagState is UiState.Loading) {
                 Column(
@@ -230,11 +302,13 @@ fun EditTagContent(
 fun EditTagContentPreview() {
     JuiceJuiceJuiceTheme {
         EditTagContent(
-            // getTagState = UiState.Success(
-            //     FakeTags.tags.first()
-            // ),
-            getTagState = UiState.Loading,
-            onUpdateTag = { }
+            navController = rememberNavController(),
+            getTagState = UiState.Success(
+                FakeTags.tags.first()
+            ),
+            // getTagState = UiState.Loading,
+            onUpdateTag = { },
+            onRemoveTag = { },
         )
     }
 }

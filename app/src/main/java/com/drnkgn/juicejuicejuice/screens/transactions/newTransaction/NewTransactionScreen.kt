@@ -64,7 +64,7 @@ import com.drnkgn.juicejuicejuice.db.entities.Transaction
 import com.drnkgn.juicejuicejuice.enums.TransactionType
 import com.drnkgn.juicejuicejuice.enums.UiState
 import com.drnkgn.juicejuicejuice.screens.transactions.TransactionViewModel
-import com.drnkgn.juicejuicejuice.screens.transactions.SelectTagBottomSheet
+import com.drnkgn.juicejuicejuice.screens.transactions.SelectTagDialog
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
 import com.drnkgn.juicejuicejuice.ui.theme.extColors
 import java.time.Instant
@@ -413,7 +413,7 @@ fun NewTransactionContent(
                         }
                     }
                 }
-                SelectTagBottomSheet(
+                SelectTagDialog(
                     open = tagsOpen,
                     tags, selectedTags,
                     onConfirm = { staged -> selectedTags = staged.toList() },
