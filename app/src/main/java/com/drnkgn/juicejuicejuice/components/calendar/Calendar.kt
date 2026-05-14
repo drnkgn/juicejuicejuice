@@ -1,6 +1,7 @@
 package com.drnkgn.juicejuicejuice.components.calendar
 
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -34,6 +36,7 @@ import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
+import kotlin.math.exp
 
 const val MAX_COL = 7
 
@@ -68,20 +71,12 @@ fun Calendar(
     val currentDate = LocalDate.now()
     val displayedDays = getDisplayedDays(currentDate)
 
-    var expanded by remember { mutableStateOf(false) }
-    var selectedRowIndex by remember { mutableIntStateOf(1) }
-
     var cellSize by remember { mutableStateOf(DpSize.Zero) }
 
-    val topRowsCount = selectedRowIndex - 1
-    val topRowsAnimation by animateDpAsState(
-        targetValue = if (expanded) cellSize.height * topRowsCount else 0.dp
-    )
-
-    val bottomRowsCount = (displayedDays.size - MAX_COL * selectedRowIndex) / MAX_COL
-    val bottomRowsAnimation by animateDpAsState(
-        targetValue = if (expanded) cellSize.height * bottomRowsCount else 0.dp
-    )
+    var expanded by remember { mutableStateOf(true) }
+    var selectedRowIndex by remember { mutableIntStateOf(
+        (displayedDays.indexOf(selectedDate)/MAX_COL)
+    ) }
 
     Column(
         modifier = Modifier
@@ -133,67 +128,48 @@ fun Calendar(
             }
         }
 
-        Box(
-            modifier = Modifier
-                .height(topRowsAnimation)
-        ) {
-            LazyVerticalGrid(columns = GridCells.Fixed(MAX_COL)) {
-                items(displayedDays.subList(0, MAX_COL * (selectedRowIndex - 1))) { day ->
-                    DayCell(
-                        day.dayOfMonth,
-                        isCutoff = day.month != currentDate.month,
-                        isToday = day == currentDate,
-                        isSelected = day == selectedDate,
-                        onClick = {
-                            val index = displayedDays.indexOf(day)
-                            selectedRowIndex = (index / 7) + 1
-
-                            onValueChange?.invoke(day)
-                        }
-                    )
-                }
-            }
-        }
-
-        LazyVerticalGrid(columns = GridCells.Fixed(MAX_COL)) {
-            items(
-                displayedDays.subList(MAX_COL*(selectedRowIndex-1), MAX_COL*selectedRowIndex)
-            ) { day ->
-                DayCell(
-                    day.dayOfMonth,
-                    isCutoff = day.month != currentDate.month,
-                    isToday = day == currentDate,
-                    isSelected = day == selectedDate,
-                    onClick = {
-                        val index = displayedDays.indexOf(day)
-                        selectedRowIndex = (index/7)+1
-
-                        onValueChange?.invoke(day)
+        (0..<(displayedDays.size/MAX_COL)).map { row ->
+            val isSelectedRow = row == selectedRowIndex
+            val alphaAnimate by animateFloatAsState(
+                targetValue = when {
+                    !isSelectedRow -> when {
+                        expanded -> 1f
+                        else -> 0f
                     }
-                )
-            }
-        }
+                    else -> 1f
+                }
+            )
 
-        Box(
-            modifier = Modifier
-                .height(bottomRowsAnimation)
-        ) {
-            LazyVerticalGrid(columns = GridCells.Fixed(MAX_COL)) {
-                items(
-                    displayedDays.subList(MAX_COL * selectedRowIndex, displayedDays.size)
-                ) { day ->
-                    DayCell(
-                        day.dayOfMonth,
-                        isCutoff = day.month != currentDate.month,
-                        isToday = day == currentDate,
-                        isSelected = day == selectedDate,
-                        onClick = {
-                            val index = displayedDays.indexOf(day)
-                            selectedRowIndex = (index / 7) + 1
+            val shinkHeightAnimate by animateDpAsState(
+                targetValue = when {
+                    !isSelectedRow -> when {
+                        expanded -> cellSize.height
+                        else -> 0.dp
+                    }
+                    else -> cellSize.height
+                }
+            )
 
-                            onValueChange?.invoke(day)
-                        }
-                    )
+            Box(
+                modifier = Modifier
+                    .height(shinkHeightAnimate)
+                    .alpha(alphaAnimate)
+            ) {
+                LazyVerticalGrid(columns = GridCells.Fixed(MAX_COL)) {
+                    items(displayedDays.subList(row * MAX_COL, (row + 1) * MAX_COL)) { day ->
+                        DayCell(
+                            day.dayOfMonth,
+                            isCutoff = day.month != currentDate.month,
+                            isToday = day == currentDate,
+                            isSelected = day == selectedDate,
+                            onClick = {
+                                val index = displayedDays.indexOf(day)
+                                selectedRowIndex = row
+
+                                onValueChange?.invoke(day)
+                            }
+                        )
+                    }
                 }
             }
         }
