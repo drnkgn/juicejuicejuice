@@ -16,6 +16,8 @@ data class ExtColors(
     val onSuccess: Color = DarkA0,
     val successIcon: Color = SuccessA0,
 
+    val info: Color = InfoA10,
+
     val disabled: Color = SurfaceA50,
     val onDisabled: Color = DarkA0,
 
