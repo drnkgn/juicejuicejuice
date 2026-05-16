@@ -22,12 +22,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
+import java.time.DayOfWeek
 import java.time.LocalDate
 
 @Composable
 fun CalendarDates(
     days: List<LocalDate>,
-    currentDate: LocalDate,
+    currentDate: LocalDate = LocalDate.now(),
+    pivotDate: LocalDate,
     selectedDate: LocalDate,
     expanded: Boolean,
     onValueChange: ((LocalDate) -> Unit)? = null
@@ -89,9 +91,10 @@ fun CalendarDates(
                     items(days.subList(row * MAX_COL, (row + 1) * MAX_COL)) { day ->
                         DayCell(
                             day.dayOfMonth,
-                            isCutoff = day.month != currentDate.month,
+                            isCutoff = day.month != pivotDate.month,
                             isToday = day == currentDate,
                             isSelected = day == selectedDate,
+                            isSunday = day.dayOfWeek == DayOfWeek.SUNDAY,
                             onClick = {
                                 selectedRowIndex = row
 
@@ -111,7 +114,7 @@ fun CalendarDatesPreview() {
     JuiceJuiceJuiceTheme {
         CalendarDates(
             days = getDisplayedDays(LocalDate.now()),
-            currentDate = LocalDate.now(),
+            pivotDate = LocalDate.now(),
             selectedDate = LocalDate.now(),
             expanded = true
         )

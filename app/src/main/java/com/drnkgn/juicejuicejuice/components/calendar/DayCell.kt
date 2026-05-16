@@ -36,6 +36,7 @@ fun DayCell(
     isToday: Boolean = false,
     isSelected: Boolean = false,
     isDayOfWeek: Boolean = false,
+    isSunday: Boolean = false
 ) {
     val interactionSource = remember { MutableInteractionSource() }
 
@@ -89,6 +90,7 @@ fun DayCell(
                 isCutoff -> MaterialTheme.colorScheme.outline
                 isDayOfWeek -> MaterialTheme.extColors.placeholder
                 isSelected -> MaterialTheme.colorScheme.onPrimary
+                isSunday -> MaterialTheme.colorScheme.error
                 else -> MaterialTheme.colorScheme.onTertiary
             },
             fontSize = 12.sp,
