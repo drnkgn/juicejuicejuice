@@ -8,6 +8,8 @@ import com.drnkgn.juicejuicejuice.enums.UiState
 import com.drnkgn.juicejuicejuice.utils.UiStateHolder
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @HiltViewModel
@@ -16,13 +18,19 @@ class OverviewViewModel @Inject constructor(
 ): ViewModel() {
     private val transactionDao = database.transaction()
 
-    val transactionWithTagsState = UiStateHolder<List<TransactionWithTags>>(UiState.Idle)
+    val indexTransactionState = UiStateHolder<List<TransactionWithTags>>(UiState.Idle)
 
-    fun getAllTransactionWithTags() {
+    fun indexTransactions(date: LocalDate? = null) {
+        var queryDate: String? = null
+        if (date is LocalDate) {
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+            queryDate = formatter.format(date)
+        }
+
         viewModelScope.launch {
-            transactionWithTagsState.set(UiState.Loading)
-            transactionWithTagsState.set(
-                UiState.Success(transactionDao.getAllTransactionsWithTags())
+            indexTransactionState.set(UiState.Loading)
+            indexTransactionState.set(
+                UiState.Success(transactionDao.index(queryDate))
             )
         }
     }

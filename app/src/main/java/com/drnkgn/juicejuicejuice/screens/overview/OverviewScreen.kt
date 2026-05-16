@@ -2,7 +2,6 @@ package com.drnkgn.juicejuicejuice.screens.overview
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -40,7 +39,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.drnkgn.juicejuicejuice.components.CalenderDates
 import com.drnkgn.juicejuicejuice.components.Chip
 import com.drnkgn.juicejuicejuice.components.calendar.Calendar
 import com.drnkgn.juicejuicejuice.db.relations.TransactionWithTags
@@ -49,34 +47,44 @@ import com.drnkgn.juicejuicejuice.fakes.FakeTransactions
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
 import com.drnkgn.juicejuicejuice.ui.theme.extColors
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 @Composable
 fun OverviewScreen(
     navController: NavController,
     overviewViewModel: OverviewViewModel = hiltViewModel()
 ) {
-    val getAllTransactionsState by overviewViewModel.transactionWithTagsState.toCollect()
+    val getAllTransactionsState by overviewViewModel.indexTransactionState.toCollect()
 
-    LaunchedEffect(Unit) {
-        overviewViewModel.getAllTransactionWithTags()
+    fun handleSelectDateChange(date: LocalDate? = null) {
+        overviewViewModel.indexTransactions(date)
     }
 
-    OverviewContent(navController, getAllTransactionsState)
+    LaunchedEffect(Unit) {
+        handleSelectDateChange()
+    }
+
+    OverviewContent(
+        navController,
+        getAllTransactionsState,
+        onSelectDateChange = { date ->
+            handleSelectDateChange(date)
+        }
+    )
 }
 
 @Composable
 fun OverviewContent(
     navController: NavController,
-    getAllTransactionWithTagsState: UiState<List<TransactionWithTags>>
+    indexTransactionState: UiState<List<TransactionWithTags>>,
+    onSelectDateChange: (LocalDate) -> Unit
 ) {
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
-    var allTransactionWithTags by remember { mutableStateOf<List<TransactionWithTags>>(emptyList()) }
+    var transactions by remember { mutableStateOf<List<TransactionWithTags>>(emptyList()) }
 
-    LaunchedEffect(getAllTransactionWithTagsState) {
-        when (getAllTransactionWithTagsState) {
+    LaunchedEffect(indexTransactionState) {
+        when (indexTransactionState) {
             is UiState.Success -> {
-                allTransactionWithTags = getAllTransactionWithTagsState.data
+                transactions = indexTransactionState.data
             }
             else -> { }
         }
@@ -168,7 +176,10 @@ fun OverviewContent(
             }
             Calendar(
                 selectedDate = selectedDate,
-                onValueChange = { day -> selectedDate = day }
+                onValueChange = { day ->
+                    selectedDate = day
+                    onSelectDateChange(day)
+                }
             )
             Spacer(Modifier.height(10.dp))
             Row(
@@ -177,7 +188,7 @@ fun OverviewContent(
                 horizontalArrangement = Arrangement.End
             ) {
                 Text(
-                    "${allTransactionWithTags.size} transactions",
+                    "${transactions.size} transactions",
                     fontSize = 12.sp,
                     color = MaterialTheme.extColors.placeholder
                 )
@@ -187,7 +198,7 @@ fun OverviewContent(
                     .padding(bottom = 10.dp, top = 6.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                items(allTransactionWithTags) { transactionWithTags ->
+                items(transactions) { transactionWithTags ->
                     TransactionItem(
                         transactionWithTags,
                         onClick = { navController.navigate("transactions/edit/${transactionWithTags.transaction.id}") }
@@ -204,7 +215,8 @@ fun OverviewContentPreview() {
     JuiceJuiceJuiceTheme {
         OverviewContent(
             rememberNavController(),
-            UiState.Success(FakeTransactions.fakeTransactions)
+            UiState.Success(FakeTransactions.fakeTransactions),
+            onSelectDateChange = { }
         )
     }
 }
