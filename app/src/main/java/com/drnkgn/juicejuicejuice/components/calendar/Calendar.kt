@@ -1,61 +1,67 @@
 package com.drnkgn.juicejuicejuice.components.calendar
 
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloatAsState
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonPrimitive
+import com.google.gson.JsonSerializer
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
-import kotlin.math.exp
 
 const val MAX_COL = 7
 
-fun getDisplayedDays(currentDate: LocalDate): List<LocalDate> {
-    val thisMonth = YearMonth.of(currentDate.year, currentDate.month)
-    val thisMonthDays = (1..thisMonth.lengthOfMonth()).map { day ->
-        LocalDate.of(currentDate.year, currentDate.month, day)
+fun getDisplayedDays(pivotDate: LocalDate): List<LocalDate> {
+    val pivotMonth = YearMonth.of(pivotDate.year, pivotDate.month)
+    val pivotMonthDays = (1..pivotMonth.lengthOfMonth()).map { day ->
+        LocalDate.of(pivotDate.year, pivotDate.month, day)
     }
 
-    val lastMonthSinceNow = currentDate.minusMonths(1)
-    val lastMonth = YearMonth.of(lastMonthSinceNow.year, lastMonthSinceNow.month)
-    val lastMonthDays = (1..lastMonth.lengthOfMonth()).map { day ->
-        LocalDate.of(lastMonth.year, lastMonth.month, day)
+    val previousMonthSincePivot = pivotDate.minusMonths(1)
+    val previousMonth = YearMonth.of(previousMonthSincePivot.year, previousMonthSincePivot.month)
+    val previousMonthDays = (1..previousMonth.lengthOfMonth()).map { day ->
+        LocalDate.of(previousMonth.year, previousMonth.month, day)
     }
-    val lastMonthCutoff = thisMonthDays.first().dayOfWeek.value - 1 // minus one for 0 indexing
-    val lastMonthCutoffDays = lastMonthDays
-        .subList(lastMonthDays.size - lastMonthCutoff, lastMonthDays.size)
+    val previousMonthCutoff = pivotMonthDays.first().dayOfWeek.value - 1 // minus one for 0 indexing
+    val previousMonthCutoffDays = previousMonthDays
+        .subList(previousMonthDays.size - previousMonthCutoff, previousMonthDays.size)
 
-    val displayedDays = listOf(lastMonthCutoffDays, thisMonthDays).flatten()
+    val nextMonthSincePivot = pivotDate.plusMonths(1)
+    val nextMonth = YearMonth.of(nextMonthSincePivot.year, nextMonthSincePivot.month)
+    val nextMonthDays = (1..nextMonth.lengthOfMonth()).map { day ->
+        LocalDate.of(nextMonth.year, nextMonth.month, day)
+    }
+    val nextMonthCutoff = MAX_COL - pivotMonthDays.last().dayOfWeek.value
+    val nextMonthCutoffDays = nextMonthDays
+        .subList(0, nextMonthCutoff)
+
+    val displayedDays = listOf(previousMonthCutoffDays, pivotMonthDays, nextMonthCutoffDays).flatten()
 
     return displayedDays
 }
@@ -65,18 +71,38 @@ fun Calendar(
     selectedDate: LocalDate = LocalDate.now(),
     onValueChange: ((LocalDate) -> Unit)? = null
 ) {
-    val density = LocalDensity.current
+    val pageCount = Int.MAX_VALUE
+    val pageCenter = Int.MAX_VALUE / 2
+    val pagerState = rememberPagerState(initialPage = pageCenter, pageCount = { pageCount })
+
+    val keepRange = 3
+    val cache = remember { mutableStateMapOf<Int, List<LocalDate>>() }
 
     val titleFormatter = DateTimeFormatter.ofPattern("MMM yyyy")
     val currentDate = LocalDate.now()
-    val displayedDays = getDisplayedDays(currentDate)
 
-    var cellSize by remember { mutableStateOf(DpSize.Zero) }
-
+    var pivotDate by remember { mutableStateOf(currentDate) }
     var expanded by remember { mutableStateOf(true) }
-    var selectedRowIndex by remember { mutableIntStateOf(
-        (displayedDays.indexOf(selectedDate)/MAX_COL)
-    ) }
+
+    LaunchedEffect(pagerState.settledPage) {
+        val settledPage = pagerState.settledPage
+
+        pivotDate = currentDate.plusMonths((settledPage - pageCenter).toLong())
+        for (p in (settledPage - keepRange)..(settledPage + keepRange)) {
+            if (cache[p] == null) {
+                val signedIndex = (p - pageCenter).toLong()
+                val date = currentDate.plusMonths(signedIndex)
+                val result = withContext(Dispatchers.Default) { getDisplayedDays(date) }
+
+                cache[p] = result
+            }
+        }
+
+        val min = settledPage - keepRange
+        val max = settledPage + keepRange
+        val toRemove = cache.keys.filter { it !in min..max }
+        toRemove.forEach { cache.remove(it) }
+    }
 
     Column(
         modifier = Modifier
@@ -93,7 +119,7 @@ fun Calendar(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                titleFormatter.format(currentDate),
+                titleFormatter.format(pivotDate),
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Bold
             )
@@ -110,68 +136,22 @@ fun Calendar(
             }
         }
 
-        LazyVerticalGrid(columns = GridCells.Fixed(MAX_COL)) {
-            items(1) { dayOfWeek ->
-                DayCell(
-                    dayOfWeek,
-                    modifier = Modifier
-                        .onSizeChanged {
-                            cellSize = with (density) {
-                                DpSize(it.width.toDp(), it.height.toDp())
-                            }
-                        },
-                    isDayOfWeek = true,
-                )
-            }
-            items((1..6).toList()) { dayOfWeek ->
-                DayCell(dayOfWeek, isDayOfWeek = true)
-            }
-        }
+        HorizontalPager(
+            state = pagerState
+        ) { page ->
+            val gson = GsonBuilder()
+                .registerTypeAdapter(LocalDate::class.java, JsonSerializer<LocalDate> { src, _, _ ->
+                    JsonPrimitive(src.toString())
+                })
+                .create()
 
-        (0..<(displayedDays.size/MAX_COL)).map { row ->
-            val isSelectedRow = row == selectedRowIndex
-            val alphaAnimate by animateFloatAsState(
-                targetValue = when {
-                    !isSelectedRow -> when {
-                        expanded -> 1f
-                        else -> 0f
-                    }
-                    else -> 1f
-                }
+            val json = gson.toJson(cache)
+
+            Log.d("JJJ", json)
+            CalendarDates(
+                cache[pagerState.targetPage] ?: getDisplayedDays(pivotDate),
+                pivotDate, selectedDate, expanded, onValueChange
             )
-
-            val shinkHeightAnimate by animateDpAsState(
-                targetValue = when {
-                    !isSelectedRow -> when {
-                        expanded -> cellSize.height
-                        else -> 0.dp
-                    }
-                    else -> cellSize.height
-                }
-            )
-
-            Box(
-                modifier = Modifier
-                    .height(shinkHeightAnimate)
-                    .alpha(alphaAnimate)
-            ) {
-                LazyVerticalGrid(columns = GridCells.Fixed(MAX_COL)) {
-                    items(displayedDays.subList(row * MAX_COL, (row + 1) * MAX_COL)) { day ->
-                        DayCell(
-                            day.dayOfMonth,
-                            isCutoff = day.month != currentDate.month,
-                            isToday = day == currentDate,
-                            isSelected = day == selectedDate,
-                            onClick = {
-                                val index = displayedDays.indexOf(day)
-                                selectedRowIndex = row
-
-                                onValueChange?.invoke(day)
-                            }
-                        )
-                    }
-                }
-            }
         }
     }
 }
