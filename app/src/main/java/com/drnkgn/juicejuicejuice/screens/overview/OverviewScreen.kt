@@ -2,6 +2,7 @@ package com.drnkgn.juicejuicejuice.screens.overview
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -41,10 +42,14 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.drnkgn.juicejuicejuice.components.CalenderDates
 import com.drnkgn.juicejuicejuice.components.Chip
+import com.drnkgn.juicejuicejuice.components.calendar.Calendar
 import com.drnkgn.juicejuicejuice.db.relations.TransactionWithTags
 import com.drnkgn.juicejuicejuice.enums.UiState
 import com.drnkgn.juicejuicejuice.fakes.FakeTransactions
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
+import com.drnkgn.juicejuicejuice.ui.theme.extColors
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun OverviewScreen(
@@ -65,6 +70,7 @@ fun OverviewContent(
     navController: NavController,
     getAllTransactionWithTagsState: UiState<List<TransactionWithTags>>
 ) {
+    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var allTransactionWithTags by remember { mutableStateOf<List<TransactionWithTags>>(emptyList()) }
 
     LaunchedEffect(getAllTransactionWithTagsState) {
@@ -111,11 +117,12 @@ fun OverviewContent(
         Column(
             modifier = Modifier
                 .padding(innerPadding)
+                .padding(horizontal = 20.dp)
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp),
+                    .padding(vertical = 20.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 TopCard(modifier = Modifier.weight(1f)) {
@@ -159,11 +166,25 @@ fun OverviewContent(
                     }
                 }
             }
-            CalenderDates()
-            Spacer(Modifier.height(6.dp))
+            Calendar(
+                selectedDate = selectedDate,
+                onValueChange = { day -> selectedDate = day }
+            )
+            Spacer(Modifier.height(10.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                Text(
+                    "${allTransactionWithTags.size} transactions",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.extColors.placeholder
+                )
+            }
             LazyColumn(
                 modifier = Modifier
-                    .padding(vertical = 10.dp, horizontal = 20.dp),
+                    .padding(bottom = 10.dp, top = 6.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 items(allTransactionWithTags) { transactionWithTags ->
