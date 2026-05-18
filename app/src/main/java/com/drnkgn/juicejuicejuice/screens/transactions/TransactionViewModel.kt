@@ -7,6 +7,7 @@ import com.drnkgn.juicejuicejuice.db.entities.Tag
 import com.drnkgn.juicejuicejuice.db.entities.Transaction
 import com.drnkgn.juicejuicejuice.db.entities.TransactionTagsPivot
 import com.drnkgn.juicejuicejuice.db.relations.TransactionWithTags
+import com.drnkgn.juicejuicejuice.enums.TransactionType
 import com.drnkgn.juicejuicejuice.states.Resource
 import com.drnkgn.juicejuicejuice.states.UiStateHolder
 import com.drnkgn.juicejuicejuice.utils.Utils
@@ -44,12 +45,12 @@ class TransactionViewModel @Inject constructor(
         }
     }
 
-    fun getAllTags() {
+    fun indexTags(type: TransactionType) {
         viewModelScope.launch {
             getAllTagsState.set(isLoading = true)
             getAllTagsState.set(
                 isLoading = false,
-                data = Utils.safeApiCall { tagDao.getAllTags() }
+                data = Utils.safeApiCall { tagDao.indexTags(type) }
             )
         }
     }
@@ -80,7 +81,6 @@ class TransactionViewModel @Inject constructor(
             )
 
             updateTransactionState.set(
-                isLoading = false,
                 data = Resource.Success(Unit)
             )
         }

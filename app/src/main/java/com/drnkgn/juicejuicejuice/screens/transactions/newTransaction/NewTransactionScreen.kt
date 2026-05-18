@@ -84,14 +84,13 @@ fun NewTransactionScreen(
     val addTransactionState by transactionViewModel.createTransactionState.toCollect()
     val getAllTagsState by transactionViewModel.getAllTagsState.toCollect()
 
-    LaunchedEffect(Unit) {
-        transactionViewModel.getAllTags()
-    }
-
     NewTransactionContent(
         navController,
         getAllTagsState,
         addTransactionState,
+        handleGetAllTags = { type ->
+            transactionViewModel.indexTags(type)
+        },
         onConfirm = { transaction, tags ->
             transactionViewModel.createTransaction(transaction, tags)
         }
@@ -104,6 +103,7 @@ fun NewTransactionContent(
     navController: NavController,
     getAllTagsState: UiState<List<Tag>>,
     addTransactionState: UiState<Unit>,
+    handleGetAllTags: (TransactionType) -> Unit,
     onConfirm: (Transaction, List<Tag>) -> Unit,
 ) {
     val context = LocalContext.current
@@ -185,6 +185,16 @@ fun NewTransactionContent(
             tags = getAllTagsState.data.data
         }
         else -> { }
+    }
+
+    LaunchedEffect(tagsOpen) {
+        if (tagsOpen) {
+            handleGetAllTags(transactionType)
+        }
+    }
+
+    LaunchedEffect(transactionType) {
+        selectedTags = emptyList()
     }
 
     Scaffold(
@@ -433,6 +443,7 @@ fun NewTransactionContentPreview() {
             rememberNavController(),
             getAllTagsState = UiState(data = Resource.Idle),
             addTransactionState = UiState(data = Resource.Idle),
+            handleGetAllTags = { },
             onConfirm = { _, _ ->  }
         )
     }

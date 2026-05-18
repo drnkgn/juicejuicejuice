@@ -89,7 +89,6 @@ fun EditTransactionScreen(
     val getTransactionState by transactionViewModel.getTransactionState.toCollect()
 
     LaunchedEffect(Unit) {
-        transactionViewModel.getAllTags()
         transactionId?.let { transactionViewModel.getTransaction(it) }
     }
 
@@ -98,6 +97,9 @@ fun EditTransactionScreen(
         getAllTagsState,
         getTransactionState,
         updateTransactionState,
+        handleGetAllTags = { type ->
+            transactionViewModel.indexTags(type)
+        },
         onUpdate = { transaction, tags ->
             transactionViewModel.updateTransaction(transaction, tags)
         }
@@ -111,6 +113,7 @@ fun EditTransactionContent(
     getAllTagsState: UiState<List<Tag>>,
     getTransactionState: UiState<TransactionWithTags>,
     updateTransactionState: UiState<Unit>,
+    handleGetAllTags: (TransactionType) -> Unit,
     onUpdate: (Transaction, List<Tag>) -> Unit,
 ) {
     val context = LocalContext.current
@@ -210,6 +213,16 @@ fun EditTransactionContent(
             selectedTags = tags
         }
         else -> { }
+    }
+
+    LaunchedEffect(tagsOpen) {
+        if (tagsOpen) {
+            handleGetAllTags(transactionType)
+        }
+    }
+
+    LaunchedEffect(transactionType) {
+        selectedTags = emptyList()
     }
 
     Scaffold(
@@ -461,6 +474,7 @@ fun EditTransactionContentPreview() {
                 data = Resource.Success(FakeTransactions.fakeTransactions.first())
             ),
             updateTransactionState = UiState(data = Resource.Idle),
+            handleGetAllTags = { },
             onUpdate = { _, _ ->  }
         )
     }
