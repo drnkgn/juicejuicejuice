@@ -22,6 +22,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -40,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.drnkgn.juicejuicejuice.components.AppTopBar
 import com.drnkgn.juicejuicejuice.components.FormColumn
 import com.drnkgn.juicejuicejuice.components.JJJButton
 import com.drnkgn.juicejuicejuice.components.JJJButtonColors
@@ -120,26 +122,19 @@ fun EditTagContent(
 
     Scaffold(
         topBar = {
-            Row(
-                modifier = Modifier
-                    .padding(top = 20.dp)
-                    .padding(horizontal = 20.dp)
-                    .windowInsetsPadding(WindowInsets.systemBars)
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            AppTopBar(
+                title = "Edit Tag ${if (tagForm.deletedAt !== null) "(Deleted)" else ""}"
             ) {
-                Text(
-                    "Edit Tag ${if (tagForm.deletedAt !== null) "(Deleted)" else ""}",
-                    fontWeight = FontWeight.Bold, fontSize = 26.sp
-                )
                 if (tagForm.deletedAt === null) {
                     Box {
-                        Icon(
-                            Icons.Filled.MoreVert,
-                            contentDescription = "more",
-                            modifier = Modifier.clickable { moreOptionExpanded = true }
-                        )
+                        IconButton(
+                            onClick = { moreOptionExpanded = true }
+                        ) {
+                            Icon(
+                                Icons.Filled.MoreVert,
+                                contentDescription = "more",
+                            )
+                        }
                         DropdownMenu(
                             expanded = moreOptionExpanded,
                             containerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -168,11 +163,11 @@ fun EditTagContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .padding(horizontal = 20.dp)
         ) {
             if (getTagState.isLoading) {
                 Column(
                     modifier = Modifier
-                        .padding(20.dp)
                         .fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -184,7 +179,6 @@ fun EditTagContent(
             } else if (getTagState.data is Resource.Success) {
                 Column(
                     modifier = Modifier
-                        .padding(20.dp)
                         .fillMaxSize(),
                     verticalArrangement = Arrangement.SpaceBetween
                 ) {

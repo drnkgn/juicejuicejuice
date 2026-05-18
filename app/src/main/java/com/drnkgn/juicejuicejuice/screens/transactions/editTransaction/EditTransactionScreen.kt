@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.drnkgn.juicejuicejuice.components.AppTopBar
 import com.drnkgn.juicejuicejuice.components.FormColumn
 import com.drnkgn.juicejuicejuice.components.JJJButton
 import com.drnkgn.juicejuicejuice.components.JJJButtonColors
@@ -227,20 +228,16 @@ fun EditTransactionContent(
 
     Scaffold(
         topBar = {
-            Box(
-                modifier = Modifier
-                    .padding(top = 20.dp)
-                    .padding(horizontal = 20.dp)
-                    .windowInsetsPadding(WindowInsets.systemBars)
-            ) {
-                Text("Edit Transaction", fontWeight = FontWeight.Bold, fontSize = 26.sp)
-            }
+            AppTopBar(title = "Edit Transaction")
         },
     ) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding)) {
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .padding(horizontal = 20.dp)
+        ) {
             Column(
                 modifier = Modifier
-                    .padding(20.dp)
                     .fillMaxWidth()
             ) {
                 FormColumn("Transaction Type") {

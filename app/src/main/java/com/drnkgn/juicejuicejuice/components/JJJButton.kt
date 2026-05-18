@@ -29,9 +29,9 @@ enum class JJJButtonColors {
 
 @Composable
 fun JJJButton(
+    modifier: Modifier = Modifier,
     enabled: Boolean = true,
     isLoading: Boolean = false,
-    modifier: Modifier = Modifier,
     colors: JJJButtonColors = JJJButtonColors.Default,
     shape: Shape = RoundedCornerShape(10.dp),
     contentPadding: PaddingValues = ButtonDefaults.ContentPadding,

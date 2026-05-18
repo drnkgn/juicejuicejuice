@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -21,9 +22,11 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -39,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.drnkgn.juicejuicejuice.components.AppTopBar
 import com.drnkgn.juicejuicejuice.components.Chip
 import com.drnkgn.juicejuicejuice.components.calendar.Calendar
 import com.drnkgn.juicejuicejuice.db.relations.TransactionWithTags
@@ -93,21 +97,15 @@ fun OverviewContent(
 
     Scaffold(
         topBar = {
-            Row(
-                modifier = Modifier
-                    .padding(top = 20.dp)
-                    .padding(horizontal = 20.dp)
-                    .windowInsetsPadding(WindowInsets.systemBars)
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("Home", fontWeight = FontWeight.Bold, fontSize = 26.sp)
-                Icon(
-                    Icons.Filled.Settings,
-                    contentDescription = "settings",
-                    modifier = Modifier.clickable { navController.navigate("settings") }
-                )
+            AppTopBar(title = "Home") {
+                IconButton(
+                    onClick = { navController.navigate("settings") }
+                ) {
+                    Icon(
+                        Icons.Filled.Settings,
+                        contentDescription = "settings",
+                    )
+                }
             }
         },
         floatingActionButton = {
@@ -131,7 +129,7 @@ fun OverviewContent(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 20.dp),
+                    .padding(bottom = 20.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 TopCard(modifier = Modifier.weight(1f)) {

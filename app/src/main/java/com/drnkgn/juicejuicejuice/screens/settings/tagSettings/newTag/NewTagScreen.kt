@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.drnkgn.juicejuicejuice.components.AppTopBar
 import com.drnkgn.juicejuicejuice.components.FormColumn
 import com.drnkgn.juicejuicejuice.components.JJJButton
 import com.drnkgn.juicejuicejuice.components.JJJButtonColors
@@ -75,27 +76,17 @@ fun NewTagContent(
 
     Scaffold(
         topBar = {
-            Box(
-                modifier = Modifier
-                    .padding(top = 20.dp)
-                    .padding(horizontal = 20.dp)
-                    .windowInsetsPadding(WindowInsets.systemBars)
-            ) {
-                Text(
-                    "New Tag",
-                    fontWeight = FontWeight.Bold, fontSize = 26.sp
-                )
-            }
+            AppTopBar(title = "New Tag")
         },
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .padding(horizontal = 20.dp)
         ) {
             Column(
                 modifier = Modifier
-                    .padding(20.dp)
                     .fillMaxSize(),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {

@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.drnkgn.juicejuicejuice.components.AppTopBar
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
 
 @Composable
@@ -33,23 +34,17 @@ fun SettingsScreen(navController: NavController) {
 fun SettingsContent(navController: NavController) {
     Scaffold(
         topBar = {
-            Box(
-                modifier = Modifier
-                    .padding(top = 20.dp)
-                    .padding(horizontal = 20.dp)
-                    .windowInsetsPadding(WindowInsets.systemBars)
-            ) {
-                Text("Settings", fontWeight = FontWeight.Bold, fontSize = 26.sp)
-            }
+            AppTopBar(title = "Settings")
         },
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
+                .padding(horizontal = 20.dp)
         ) {
             Column(
                 modifier = Modifier
-                    .padding(vertical = 20.dp, horizontal = 20.dp)
+                    .padding(vertical = 20.dp)
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
