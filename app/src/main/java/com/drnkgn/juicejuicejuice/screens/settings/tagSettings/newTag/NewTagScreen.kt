@@ -20,7 +20,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,10 +38,10 @@ import com.drnkgn.juicejuicejuice.components.JJJButtonColors
 import com.drnkgn.juicejuicejuice.components.JJJTextField
 import com.drnkgn.juicejuicejuice.components.JJJToggleableButton
 import com.drnkgn.juicejuicejuice.db.entities.Tag
-import com.drnkgn.juicejuicejuice.enums.SharedFormMode
 import com.drnkgn.juicejuicejuice.enums.TransactionType
-import com.drnkgn.juicejuicejuice.enums.UiState
 import com.drnkgn.juicejuicejuice.screens.settings.tagSettings.TagSettingsViewModel
+import com.drnkgn.juicejuicejuice.states.Resource
+import com.drnkgn.juicejuicejuice.states.UiState
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
 import com.drnkgn.juicejuicejuice.ui.theme.extColors
 
@@ -53,8 +52,8 @@ fun NewTagScreen(
 ) {
     val createTagState by tagSettingsViewModel.createTagState.toCollect()
 
-    when (createTagState) {
-        is UiState.Success<*> -> {
+    when (createTagState.data) {
+        is Resource.Success -> {
             navController.popBackStack()
         }
         else -> { }
@@ -68,7 +67,7 @@ fun NewTagScreen(
 
 @Composable
 fun NewTagContent(
-    createTagState: UiState<Unit> = UiState.Idle,
+    createTagState: UiState<Unit> = UiState(data = Resource.Idle),
     onCreateTag: (Tag) -> Unit
 ) {
     var tagType by remember { mutableStateOf(TransactionType.Expense) }
@@ -170,7 +169,7 @@ fun NewTagContent(
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            if (createTagState is UiState.Loading) {
+                            if (createTagState.isLoading) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(16.dp),
                                     color = MaterialTheme.colorScheme.onPrimary,
@@ -196,7 +195,7 @@ fun NewTagContent(
 fun NewTagContentPreview() {
     JuiceJuiceJuiceTheme {
         NewTagContent(
-            onCreateTag = { }
+            onCreateTag = { },
         )
     }
 }

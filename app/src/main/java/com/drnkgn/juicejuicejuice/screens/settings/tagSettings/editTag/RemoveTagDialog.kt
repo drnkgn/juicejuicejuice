@@ -13,16 +13,16 @@ import androidx.compose.ui.unit.dp
 import com.drnkgn.juicejuicejuice.components.BDialog
 import com.drnkgn.juicejuicejuice.components.JJJButton
 import com.drnkgn.juicejuicejuice.components.JJJButtonColors
-import com.drnkgn.juicejuicejuice.db.entities.toUiState
+import com.drnkgn.juicejuicejuice.db.entities.toForm
 import com.drnkgn.juicejuicejuice.fakes.FakeTags
-import com.drnkgn.juicejuicejuice.states.TagUIState
+import com.drnkgn.juicejuicejuice.states.forms.TagForm
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RemoveTagDialog(
     open: Boolean = true,
-    tag: TagUIState,
+    tag: TagForm,
     isLoading: Boolean = false,
     onConfirm: (() -> Unit),
     onClose: (() -> Unit)
@@ -65,7 +65,7 @@ private fun RemoveTagDialogPreview() {
     JuiceJuiceJuiceTheme {
         RemoveTagDialog(
             open = true,
-            tag = FakeTags.tags.first().toUiState(),
+            tag = FakeTags.tags.first().toForm(),
             onConfirm = { },
             onClose = { }
         )

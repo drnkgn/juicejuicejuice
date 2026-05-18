@@ -42,8 +42,9 @@ import androidx.navigation.compose.rememberNavController
 import com.drnkgn.juicejuicejuice.components.Chip
 import com.drnkgn.juicejuicejuice.components.calendar.Calendar
 import com.drnkgn.juicejuicejuice.db.relations.TransactionWithTags
-import com.drnkgn.juicejuicejuice.enums.UiState
 import com.drnkgn.juicejuicejuice.fakes.FakeTransactions
+import com.drnkgn.juicejuicejuice.states.Resource
+import com.drnkgn.juicejuicejuice.states.UiState
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
 import com.drnkgn.juicejuicejuice.ui.theme.extColors
 import java.time.LocalDate
@@ -82,9 +83,9 @@ fun OverviewContent(
     var transactions by remember { mutableStateOf<List<TransactionWithTags>>(emptyList()) }
 
     LaunchedEffect(indexTransactionState) {
-        when (indexTransactionState) {
-            is UiState.Success -> {
-                transactions = indexTransactionState.data
+        when (indexTransactionState.data) {
+            is Resource.Success -> {
+                transactions = indexTransactionState.data.data
             }
             else -> { }
         }
@@ -215,7 +216,7 @@ fun OverviewContentPreview() {
     JuiceJuiceJuiceTheme {
         OverviewContent(
             rememberNavController(),
-            UiState.Success(FakeTransactions.fakeTransactions),
+            UiState(data = Resource.Success(FakeTransactions.fakeTransactions)),
             onSelectDateChange = { }
         )
     }
