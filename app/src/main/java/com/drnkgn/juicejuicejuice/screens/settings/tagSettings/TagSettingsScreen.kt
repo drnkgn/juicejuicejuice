@@ -39,8 +39,9 @@ import com.drnkgn.juicejuicejuice.components.ClickableTagVariant
 import com.drnkgn.juicejuicejuice.components.FormColumn
 import com.drnkgn.juicejuicejuice.db.entities.Tag
 import com.drnkgn.juicejuicejuice.enums.TransactionType
-import com.drnkgn.juicejuicejuice.enums.UiState
 import com.drnkgn.juicejuicejuice.fakes.FakeTags
+import com.drnkgn.juicejuicejuice.states.Resource
+import com.drnkgn.juicejuicejuice.states.UiState
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
 import com.drnkgn.juicejuicejuice.ui.theme.extColors
 
@@ -66,9 +67,9 @@ fun TagSettingsContent(
 ) {
     var tags by remember { mutableStateOf<List<Tag>>(emptyList()) }
 
-    when (getAllTagsState) {
-        is UiState.Success -> {
-            tags = getAllTagsState.data
+    when (getAllTagsState.data) {
+        is Resource.Success -> {
+            tags = getAllTagsState.data.data
         }
         else -> { }
     }
@@ -183,7 +184,7 @@ fun TagSettingsScreenPreview() {
     JuiceJuiceJuiceTheme {
         TagSettingsContent(
             rememberNavController(),
-            UiState.Success(FakeTags.tags)
+            UiState(data = Resource.Success(FakeTags.tags))
         )
     }
 }

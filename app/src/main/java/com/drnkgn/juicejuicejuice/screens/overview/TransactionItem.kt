@@ -74,7 +74,7 @@ fun TransactionItem(
                 modifier = Modifier
                     .fillMaxSize()
                     .weight(1f),
-                verticalArrangement = Arrangement.SpaceBetween
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Row(
                     modifier = Modifier
@@ -97,9 +97,9 @@ fun TransactionItem(
                         lineHeight = 12.sp,
                     )
                 }
-                transactionWithTags.transaction.description?.let {
+                if (!transactionWithTags.transaction.description.isNullOrEmpty()) {
                     Text(
-                        text = it,
+                        text = transactionWithTags.transaction.description,
                         fontSize = 12.sp,
                         lineHeight = 12.sp,
                         color = MaterialTheme.colorScheme.onTertiary

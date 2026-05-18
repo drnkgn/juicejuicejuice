@@ -46,13 +46,14 @@ import com.drnkgn.juicejuicejuice.components.JJJButtonColors
 import com.drnkgn.juicejuicejuice.components.JJJTextField
 import com.drnkgn.juicejuicejuice.components.JJJToggleableButton
 import com.drnkgn.juicejuicejuice.db.entities.Tag
-import com.drnkgn.juicejuicejuice.db.entities.toUiState
+import com.drnkgn.juicejuicejuice.db.entities.toForm
 import com.drnkgn.juicejuicejuice.enums.TransactionType
-import com.drnkgn.juicejuicejuice.enums.UiState
 import com.drnkgn.juicejuicejuice.fakes.FakeTags
 import com.drnkgn.juicejuicejuice.screens.settings.tagSettings.TagSettingsViewModel
-import com.drnkgn.juicejuicejuice.states.TagUIState
-import com.drnkgn.juicejuicejuice.states.toEntity
+import com.drnkgn.juicejuicejuice.states.Resource
+import com.drnkgn.juicejuicejuice.states.UiState
+import com.drnkgn.juicejuicejuice.states.forms.TagForm
+import com.drnkgn.juicejuicejuice.states.forms.toEntity
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
 import com.drnkgn.juicejuicejuice.ui.theme.extColors
 
@@ -66,8 +67,8 @@ fun EditTagScreen(
     val updateTagState by tagSettingsViewModel.updateTagState.toCollect()
     val removeTagState by tagSettingsViewModel.removeTagState.toCollect()
 
-    when (updateTagState) {
-        is UiState.Success<*> -> {
+    when (updateTagState.data) {
+        is Resource.Success -> {
             navController.popBackStack()
         }
         else -> { }
@@ -91,28 +92,26 @@ fun EditTagScreen(
 @Composable
 fun EditTagContent(
     navController: NavController,
-    getTagState: UiState<Tag> = UiState.Idle,
-    updateTagState: UiState<Unit> = UiState.Idle,
-    removeTagState: UiState<Unit> = UiState.Idle,
+    getTagState: UiState<Tag>,
+    updateTagState: UiState<Unit>,
+    removeTagState: UiState<Unit>,
     onUpdateTag: (Tag) -> Unit,
     onRemoveTag: (Tag) -> Unit
 ) {
-    var tag by remember { mutableStateOf(TagUIState(-1, "", TransactionType.Expense)) }
+    var tagForm by remember { mutableStateOf(TagForm(-1, "", TransactionType.Expense)) }
 
     var moreOptionExpanded by remember { mutableStateOf(false) }
     var removeTagDialogOpened by remember { mutableStateOf(false) }
 
-    LaunchedEffect(getTagState) {
-        when (getTagState) {
-            is UiState.Success -> {
-                tag = getTagState.data.toUiState()
-            }
-            else -> { }
+    when (getTagState.data) {
+        is Resource.Success -> {
+            tagForm = getTagState.data.data.toForm()
         }
+        else -> { }
     }
 
-    when (removeTagState) {
-        is UiState.Success -> {
+    when (removeTagState.data) {
+        is Resource.Success -> {
             removeTagDialogOpened = false
             navController.popBackStack()
         }
@@ -131,10 +130,10 @@ fun EditTagContent(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    "Edit Tag ${if (tag.deletedAt !== null) "(Deleted)" else ""}",
+                    "Edit Tag ${if (tagForm.deletedAt !== null) "(Deleted)" else ""}",
                     fontWeight = FontWeight.Bold, fontSize = 26.sp
                 )
-                if (tag.deletedAt === null) {
+                if (tagForm.deletedAt === null) {
                     Box {
                         Icon(
                             Icons.Filled.MoreVert,
@@ -170,7 +169,19 @@ fun EditTagContent(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            if (getTagState is UiState.Success) {
+            if (getTagState.isLoading) {
+                Column(
+                    modifier = Modifier
+                        .padding(20.dp)
+                        .fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.onBackground,
+                    )
+                }
+            } else if (getTagState.data is Resource.Success) {
                 Column(
                     modifier = Modifier
                         .padding(20.dp)
@@ -183,11 +194,11 @@ fun EditTagContent(
                                 horizontalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
                                 JJJToggleableButton(
-                                    toggled = tag.type == TransactionType.Income,
+                                    toggled = tagForm.type == TransactionType.Income,
                                     modifier = Modifier.weight(1f),
                                     onClick = {
-                                        if (tag.deletedAt === null)
-                                            tag = tag.copy(type = TransactionType.Income)
+                                        if (tagForm.deletedAt === null)
+                                            tagForm = tagForm.copy(type = TransactionType.Income)
                                     }
                                 ) {
                                     Row(
@@ -202,11 +213,11 @@ fun EditTagContent(
                                     }
                                 }
                                 JJJToggleableButton(
-                                    toggled = tag.type == TransactionType.Expense,
+                                    toggled = tagForm.type == TransactionType.Expense,
                                     modifier = Modifier.weight(1f),
                                     onClick = {
-                                        if (tag.deletedAt === null)
-                                            tag = tag.copy(type = TransactionType.Expense)
+                                        if (tagForm.deletedAt === null)
+                                            tagForm = tagForm.copy(type = TransactionType.Expense)
                                     }
                                 ) {
                                     Row(
@@ -225,36 +236,36 @@ fun EditTagContent(
                         FormColumn("Name") {
                             JJJTextField(
                                 // isError = !error.isEmpty(),
-                                enabled = tag.deletedAt === null,
+                                enabled = tagForm.deletedAt === null,
                                 placeholder = {
                                     Text(
                                         "Tag name",
                                         color = MaterialTheme.extColors.placeholder
                                     )
                                 },
-                                value = tag.name,
+                                value = tagForm.name,
                                 onValueChange = {
-                                    tag = tag.copy(name = it)
+                                    tagForm = tagForm.copy(name = it)
                                 }
                             )
                         }
                     }
                     Row {
                         JJJButton(
-                            enabled = updateTagState !is UiState.Loading && tag.deletedAt === null,
+                            enabled = !updateTagState.isLoading && tagForm.deletedAt === null,
                             shape = RoundedCornerShape(10.dp),
                             colors = JJJButtonColors.Primary,
                             modifier = Modifier.weight(1f),
                             onClick = {
                                 onUpdateTag(
-                                    tag.toEntity()
+                                    tagForm.toEntity()
                                 )
                             }
                         ) {
                             Row(
                                 horizontalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
-                                if (updateTagState is UiState.Loading) {
+                                if (updateTagState.isLoading) {
                                     CircularProgressIndicator(
                                         modifier = Modifier.size(16.dp),
                                         color = MaterialTheme.colorScheme.onPrimary,
@@ -272,24 +283,12 @@ fun EditTagContent(
                     }
                     RemoveTagDialog(
                         open = removeTagDialogOpened,
-                        tag = tag,
-                        isLoading = updateTagState is UiState.Loading,
+                        tag = tagForm,
+                        isLoading = updateTagState.isLoading,
                         onConfirm = {
-                            onRemoveTag(tag.toEntity())
+                            onRemoveTag(tagForm.toEntity())
                         },
                         onClose = { removeTagDialogOpened = false }
-                    )
-                }
-            } else if (getTagState is UiState.Loading) {
-                Column(
-                    modifier = Modifier
-                        .padding(20.dp)
-                        .fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.onBackground,
                     )
                 }
             }
@@ -303,12 +302,13 @@ fun EditTagContentPreview() {
     JuiceJuiceJuiceTheme {
         EditTagContent(
             navController = rememberNavController(),
-            getTagState = UiState.Success(
-                FakeTags.tags.first()
+            getTagState = UiState(
+                data = Resource.Success(FakeTags.tags.first())
             ),
-            // getTagState = UiState.Loading,
             onUpdateTag = { },
             onRemoveTag = { },
+            updateTagState = UiState(data = Resource.Idle),
+            removeTagState = UiState(data = Resource.Idle),
         )
     }
 }

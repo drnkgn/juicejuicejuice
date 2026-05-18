@@ -62,9 +62,10 @@ import com.drnkgn.juicejuicejuice.components.JJJToggleableButton
 import com.drnkgn.juicejuicejuice.db.entities.Tag
 import com.drnkgn.juicejuicejuice.db.entities.Transaction
 import com.drnkgn.juicejuicejuice.enums.TransactionType
-import com.drnkgn.juicejuicejuice.enums.UiState
-import com.drnkgn.juicejuicejuice.screens.transactions.TransactionViewModel
 import com.drnkgn.juicejuicejuice.screens.transactions.SelectTagDialog
+import com.drnkgn.juicejuicejuice.screens.transactions.TransactionViewModel
+import com.drnkgn.juicejuicejuice.states.Resource
+import com.drnkgn.juicejuicejuice.states.UiState
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
 import com.drnkgn.juicejuicejuice.ui.theme.extColors
 import java.time.Instant
@@ -83,14 +84,13 @@ fun NewTransactionScreen(
     val addTransactionState by transactionViewModel.createTransactionState.toCollect()
     val getAllTagsState by transactionViewModel.getAllTagsState.toCollect()
 
-    LaunchedEffect(Unit) {
-        transactionViewModel.getAllTags()
-    }
-
     NewTransactionContent(
         navController,
         getAllTagsState,
         addTransactionState,
+        handleGetAllTags = { type ->
+            transactionViewModel.indexTags(type)
+        },
         onConfirm = { transaction, tags ->
             transactionViewModel.createTransaction(transaction, tags)
         }
@@ -103,6 +103,7 @@ fun NewTransactionContent(
     navController: NavController,
     getAllTagsState: UiState<List<Tag>>,
     addTransactionState: UiState<Unit>,
+    handleGetAllTags: (TransactionType) -> Unit,
     onConfirm: (Transaction, List<Tag>) -> Unit,
 ) {
     val context = LocalContext.current
@@ -172,18 +173,28 @@ fun NewTransactionContent(
         )
     }
 
-    when (addTransactionState) {
-        is UiState.Success -> {
+    when (addTransactionState.data) {
+        is Resource.Success -> {
             navController.popBackStack()
         }
         else -> { }
     }
 
-    when (getAllTagsState) {
-        is UiState.Success -> {
-            tags = getAllTagsState.data
+    when (getAllTagsState.data) {
+        is Resource.Success -> {
+            tags = getAllTagsState.data.data
         }
         else -> { }
+    }
+
+    LaunchedEffect(tagsOpen) {
+        if (tagsOpen) {
+            handleGetAllTags(transactionType)
+        }
+    }
+
+    LaunchedEffect(transactionType) {
+        selectedTags = emptyList()
     }
 
     Scaffold(
@@ -385,7 +396,7 @@ fun NewTransactionContent(
                 }
                 Row {
                     Button(
-                        enabled = addTransactionState !is UiState.Loading,
+                        enabled = !addTransactionState.isLoading,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary,
                             disabledContainerColor = MaterialTheme.extColors.disabled
@@ -397,7 +408,7 @@ fun NewTransactionContent(
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            if (addTransactionState is UiState.Loading) {
+                            if (addTransactionState.isLoading) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(16.dp),
                                     color = MaterialTheme.colorScheme.onPrimary,
@@ -430,8 +441,9 @@ fun NewTransactionContentPreview() {
     JuiceJuiceJuiceTheme {
         NewTransactionContent(
             rememberNavController(),
-            getAllTagsState = UiState.Idle,
-            addTransactionState = UiState.Idle,
+            getAllTagsState = UiState(data = Resource.Idle),
+            addTransactionState = UiState(data = Resource.Idle),
+            handleGetAllTags = { },
             onConfirm = { _, _ ->  }
         )
     }
