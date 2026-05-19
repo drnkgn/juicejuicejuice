@@ -3,6 +3,7 @@ package com.drnkgn.juicejuicejuice.screens.transactions.newTransaction
 import android.app.TimePickerDialog
 import android.widget.TimePicker
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,18 +12,16 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.TrendingDown
-import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -54,19 +53,24 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.drnkgn.juicejuicejuice.components.AppTopBar
 import com.drnkgn.juicejuicejuice.components.FormColumn
+import com.drnkgn.juicejuicejuice.components.IncomeExpenseToggle
 import com.drnkgn.juicejuicejuice.components.JJJButton
-import com.drnkgn.juicejuicejuice.components.JJJButtonColors
+import com.drnkgn.juicejuicejuice.components.JJJOutlinedButton
+import com.drnkgn.juicejuicejuice.components.JJJOutlinedButtonVariant
 import com.drnkgn.juicejuicejuice.components.JJJTextField
-import com.drnkgn.juicejuicejuice.components.JJJToggleableButton
 import com.drnkgn.juicejuicejuice.db.entities.Tag
 import com.drnkgn.juicejuicejuice.db.entities.Transaction
+import com.drnkgn.juicejuicejuice.enums.JJJButtonColors
 import com.drnkgn.juicejuicejuice.enums.TransactionType
 import com.drnkgn.juicejuicejuice.screens.transactions.SelectTagDialog
 import com.drnkgn.juicejuicejuice.screens.transactions.TransactionViewModel
 import com.drnkgn.juicejuicejuice.states.Resource
 import com.drnkgn.juicejuicejuice.states.UiState
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
+import com.drnkgn.juicejuicejuice.ui.theme.SurfaceTonalA0
+import com.drnkgn.juicejuicejuice.ui.theme.SurfaceTonalA10
 import com.drnkgn.juicejuicejuice.ui.theme.extColors
 import java.time.Instant
 import java.time.LocalDate
@@ -199,59 +203,23 @@ fun NewTransactionContent(
 
     Scaffold(
         topBar = {
-            Box(
-                modifier = Modifier
-                    .padding(top = 20.dp)
-                    .padding(horizontal = 20.dp)
-                    .windowInsetsPadding(WindowInsets.systemBars)
-            ) {
-                Text("New Transaction", fontWeight = FontWeight.Bold, fontSize = 26.sp)
-            }
+            AppTopBar(title = "New Transaction")
         },
     ) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding)) {
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .padding(horizontal = 20.dp)
+        ) {
             Column(
                 modifier = Modifier
-                    .padding(20.dp)
                     .fillMaxWidth()
             ) {
                 FormColumn("Transaction Type") {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        JJJToggleableButton(
-                            toggled = transactionType == TransactionType.Income,
-                            modifier = Modifier.weight(1f),
-                            onClick = { transactionType = TransactionType.Income }
-                        ) {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.TrendingUp,
-                                    contentDescription = "Income icon"
-                                )
-                                Text("Income")
-                            }
-                        }
-                        JJJToggleableButton(
-                            toggled = transactionType == TransactionType.Expense,
-                            modifier = Modifier.weight(1f),
-                            onClick = { transactionType = TransactionType.Expense }
-                        ) {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.TrendingDown,
-                                    contentDescription = "Expense icon"
-                                )
-                                Text("Expense")
-                            }
-                        }
-                    }
+                    IncomeExpenseToggle(
+                        transactionType = transactionType,
+                        onChange = { type -> transactionType = type }
+                    )
                 }
                 FormColumn("Amount") {
                     JJJTextField(
@@ -263,7 +231,7 @@ fun NewTransactionContent(
                             )
                         },
                         leadingIcon = {
-                            Text("RM", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            Text("RM", fontWeight = FontWeight.Bold, color = MaterialTheme.extColors.placeholder)
                         },
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Decimal
@@ -278,10 +246,12 @@ fun NewTransactionContent(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .heightIn(min = 56.dp)
                             .background(
-                                color = MaterialTheme.colorScheme.tertiary,
-                                shape = RoundedCornerShape(40f)
+                                color = SurfaceTonalA0,
+                                shape = RoundedCornerShape(25f)
                             )
+                            .border(1.dp, shape = RoundedCornerShape(25f), color = SurfaceTonalA10)
                             .clickable { tagsOpen = true }
                     ) {
                         Row(
@@ -313,16 +283,31 @@ fun NewTransactionContent(
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     FormColumn("Date", modifier = Modifier.weight(1f)) {
-                        JJJButton(
-                            modifier = Modifier.fillMaxWidth(),
+                        JJJOutlinedButton(
+                            modifier = Modifier
+                                .height(56.dp)
+                                .fillMaxWidth(),
+                            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 12.dp),
+                            variant = JJJOutlinedButtonVariant.Filled,
                             onClick = { datePickerOpen = true }
                         ) {
-                            Text(
-                                selectedDate?.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) ?: "dd / mm / yyyy",
-                                color = if (selectedDate == null) MaterialTheme.extColors.placeholder else MaterialTheme.colorScheme.onTertiary,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    Icons.Outlined.CalendarMonth,
+                                    contentDescription = "date picker",
+                                    tint = MaterialTheme.colorScheme.outline,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Text(
+                                    selectedDate?.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) ?: "dd/mm/yyyy",
+                                    color = if (selectedDate == null) MaterialTheme.extColors.placeholder else MaterialTheme.colorScheme.onTertiary,
+                                    fontSize = 16.sp,
+                                )
+                            }
                         }
                         if (datePickerOpen) {
                             DatePickerDialog(
@@ -367,16 +352,32 @@ fun NewTransactionContent(
                         }
                     }
                     FormColumn("Time", modifier = Modifier.weight(1f)) {
-                        JJJButton(
-                            modifier = Modifier.fillMaxWidth(),
+                        JJJOutlinedButton(
+                            modifier = Modifier
+                                .height(56.dp)
+                                .fillMaxWidth(),
+                            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 12.dp),
+                            variant = JJJOutlinedButtonVariant.Filled,
                             onClick = { timePicker.show() }
                         ) {
-                            Text(
-                                selectedTime?.format(DateTimeFormatter.ofPattern("hh:mm a")) ?: "--:-- --",
-                                color = if (selectedTime == null) MaterialTheme.extColors.placeholder else MaterialTheme.colorScheme.onTertiary,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    Icons.Outlined.Timer,
+                                    contentDescription = "time picker",
+                                    tint = MaterialTheme.colorScheme.outline,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Text(
+                                    selectedTime?.format(DateTimeFormatter.ofPattern("hh:mm a"))
+                                        ?: "--:-- --",
+                                    color = if (selectedTime == null) MaterialTheme.extColors.placeholder else MaterialTheme.colorScheme.onTertiary,
+                                    fontSize = 16.sp,
+                                )
+                            }
                         }
                     }
                 }

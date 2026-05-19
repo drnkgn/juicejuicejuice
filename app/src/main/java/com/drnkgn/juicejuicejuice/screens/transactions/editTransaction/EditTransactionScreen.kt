@@ -11,18 +11,12 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.TrendingDown
-import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -30,7 +24,6 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -43,7 +36,6 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -54,18 +46,19 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.drnkgn.juicejuicejuice.components.AppTopBar
 import com.drnkgn.juicejuicejuice.components.FormColumn
+import com.drnkgn.juicejuicejuice.components.IncomeExpenseToggle
 import com.drnkgn.juicejuicejuice.components.JJJButton
-import com.drnkgn.juicejuicejuice.components.JJJButtonColors
 import com.drnkgn.juicejuicejuice.components.JJJTextField
-import com.drnkgn.juicejuicejuice.components.JJJToggleableButton
 import com.drnkgn.juicejuicejuice.db.entities.Tag
 import com.drnkgn.juicejuicejuice.db.entities.Transaction
 import com.drnkgn.juicejuicejuice.db.relations.TransactionWithTags
+import com.drnkgn.juicejuicejuice.enums.JJJButtonColors
 import com.drnkgn.juicejuicejuice.enums.TransactionType
 import com.drnkgn.juicejuicejuice.fakes.FakeTransactions
-import com.drnkgn.juicejuicejuice.screens.transactions.TransactionViewModel
 import com.drnkgn.juicejuicejuice.screens.transactions.SelectTagDialog
+import com.drnkgn.juicejuicejuice.screens.transactions.TransactionViewModel
 import com.drnkgn.juicejuicejuice.states.Resource
 import com.drnkgn.juicejuicejuice.states.UiState
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
@@ -227,59 +220,23 @@ fun EditTransactionContent(
 
     Scaffold(
         topBar = {
-            Box(
-                modifier = Modifier
-                    .padding(top = 20.dp)
-                    .padding(horizontal = 20.dp)
-                    .windowInsetsPadding(WindowInsets.systemBars)
-            ) {
-                Text("Edit Transaction", fontWeight = FontWeight.Bold, fontSize = 26.sp)
-            }
+            AppTopBar(title = "Edit Transaction")
         },
     ) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding)) {
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .padding(horizontal = 20.dp)
+        ) {
             Column(
                 modifier = Modifier
-                    .padding(20.dp)
                     .fillMaxWidth()
             ) {
                 FormColumn("Transaction Type") {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        JJJToggleableButton(
-                            toggled = transactionType == TransactionType.Income,
-                            modifier = Modifier.weight(1f),
-                            onClick = { transactionType = TransactionType.Income }
-                        ) {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.TrendingUp,
-                                    contentDescription = "Income icon"
-                                )
-                                Text("Income")
-                            }
-                        }
-                        JJJToggleableButton(
-                            toggled = transactionType == TransactionType.Expense,
-                            modifier = Modifier.weight(1f),
-                            onClick = { transactionType = TransactionType.Expense }
-                        ) {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.TrendingDown,
-                                    contentDescription = "Expense icon"
-                                )
-                                Text("Expense")
-                            }
-                        }
-                    }
+                    IncomeExpenseToggle(
+                        transactionType = transactionType,
+                        onChange = { type -> transactionType = type }
+                    )
                 }
                 FormColumn("Amount") {
                     JJJTextField(

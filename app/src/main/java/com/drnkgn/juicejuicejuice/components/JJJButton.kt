@@ -19,19 +19,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.drnkgn.juicejuicejuice.enums.JJJButtonColors
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
+import com.drnkgn.juicejuicejuice.ui.theme.WarningA10
 import com.drnkgn.juicejuicejuice.ui.theme.extColors
-
-enum class JJJButtonColors {
-    Default,
-    Primary
-}
 
 @Composable
 fun JJJButton(
+    modifier: Modifier = Modifier,
     enabled: Boolean = true,
     isLoading: Boolean = false,
-    modifier: Modifier = Modifier,
     colors: JJJButtonColors = JJJButtonColors.Default,
     shape: Shape = RoundedCornerShape(10.dp),
     contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
@@ -46,10 +43,12 @@ fun JJJButton(
         colors = ButtonDefaults.buttonColors(
             containerColor = when (colors) {
                 JJJButtonColors.Primary -> MaterialTheme.colorScheme.primary
+                JJJButtonColors.Warning -> WarningA10
                 else -> MaterialTheme.colorScheme.tertiary
             },
             contentColor = when (colors) {
                 JJJButtonColors.Primary -> MaterialTheme.colorScheme.onPrimary
+                JJJButtonColors.Warning -> MaterialTheme.colorScheme.onTertiary
                 else -> MaterialTheme.colorScheme.onTertiary
             },
         ),
@@ -78,7 +77,7 @@ fun JJJButton(
 fun JJJButtonPreview() {
     JuiceJuiceJuiceTheme {
         JJJButton(
-            isLoading = true,
+            colors = JJJButtonColors.Warning,
             onClick = { }
         ) {
             Row(

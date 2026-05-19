@@ -16,6 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
+import com.drnkgn.juicejuicejuice.ui.theme.extColors
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -27,7 +28,7 @@ fun BDialog(
 ) {
     if (open) {
         ModalBottomSheet(
-            containerColor = MaterialTheme.colorScheme.background,
+            containerColor = MaterialTheme.extColors.dialogContainer,
             dragHandle = null,
             onDismissRequest = onDismissRequest
         ) {
@@ -35,7 +36,12 @@ fun BDialog(
                 modifier = Modifier
                     .padding(top = 30.dp, start = 20.dp, bottom = 20.dp, end = 20.dp)
             ) {
-                Text(title, fontWeight = FontWeight.Bold, fontSize = 26.sp)
+                Text(
+                    title,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 26.sp,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
             }
             HorizontalDivider()
             Column(
@@ -55,20 +61,23 @@ fun BDialogPreview() {
         BDialog(
             open = true,
             title = "Bottom dialog example",
-            content = {
-                Text("This is an example of a bottom dialog")
-                Row(
-                    modifier = Modifier.padding(vertical = 10.dp)
-                ) {
-                    JJJButton(
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = { }
-                    ) {
-                        Text("Ok")
-                    }
-                }
-            },
             onDismissRequest = { }
-        )
+        ) {
+            Text(
+                "This is an example of a bottom dialog",
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Row(
+                modifier = Modifier.padding(vertical = 10.dp)
+            ) {
+                JJJOutlinedButton(
+                    variant = JJJOutlinedButtonVariant.Filled,
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { }
+                ) {
+                    Text("Ok")
+                }
+            }
+        }
     }
 }

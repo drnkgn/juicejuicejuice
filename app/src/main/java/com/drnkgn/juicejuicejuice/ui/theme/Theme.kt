@@ -24,6 +24,8 @@ data class ExtColors(
     val inputBgError: Color = DangerA0,
     val onInputBgError: Color = DarkA0,
 
+    val dialogContainer: Color = SurfaceTonalA0,
+
     val placeholder: Color = SurfaceA50
 )
 

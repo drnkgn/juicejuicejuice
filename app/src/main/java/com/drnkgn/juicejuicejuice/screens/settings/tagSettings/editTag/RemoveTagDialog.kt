@@ -12,8 +12,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.drnkgn.juicejuicejuice.components.BDialog
 import com.drnkgn.juicejuicejuice.components.JJJButton
-import com.drnkgn.juicejuicejuice.components.JJJButtonColors
 import com.drnkgn.juicejuicejuice.db.entities.toForm
+import com.drnkgn.juicejuicejuice.enums.JJJButtonColors
 import com.drnkgn.juicejuicejuice.fakes.FakeTags
 import com.drnkgn.juicejuicejuice.states.forms.TagForm
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
