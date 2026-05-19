@@ -12,19 +12,14 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.TrendingDown
-import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.Button
@@ -39,7 +34,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -61,16 +55,15 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.drnkgn.juicejuicejuice.components.AppTopBar
 import com.drnkgn.juicejuicejuice.components.FormColumn
+import com.drnkgn.juicejuicejuice.components.IncomeExpenseToggle
 import com.drnkgn.juicejuicejuice.components.JJJButton
-import com.drnkgn.juicejuicejuice.components.JJJButtonColors
 import com.drnkgn.juicejuicejuice.components.JJJOutlinedButton
 import com.drnkgn.juicejuicejuice.components.JJJOutlinedButtonVariant
 import com.drnkgn.juicejuicejuice.components.JJJTextField
-import com.drnkgn.juicejuicejuice.components.JJJToggleableButton
 import com.drnkgn.juicejuicejuice.db.entities.Tag
 import com.drnkgn.juicejuicejuice.db.entities.Transaction
+import com.drnkgn.juicejuicejuice.enums.JJJButtonColors
 import com.drnkgn.juicejuicejuice.enums.TransactionType
-import com.drnkgn.juicejuicejuice.extensions.ifTrue
 import com.drnkgn.juicejuicejuice.screens.transactions.SelectTagDialog
 import com.drnkgn.juicejuicejuice.screens.transactions.TransactionViewModel
 import com.drnkgn.juicejuicejuice.states.Resource
@@ -223,42 +216,10 @@ fun NewTransactionContent(
                     .fillMaxWidth()
             ) {
                 FormColumn("Transaction Type") {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        JJJToggleableButton(
-                            toggled = transactionType == TransactionType.Income,
-                            modifier = Modifier.weight(1f),
-                            onClick = { transactionType = TransactionType.Income }
-                        ) {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.TrendingUp,
-                                    contentDescription = "Income icon"
-                                )
-                                Text("Income")
-                            }
-                        }
-                        JJJToggleableButton(
-                            toggled = transactionType == TransactionType.Expense,
-                            modifier = Modifier.weight(1f),
-                            onClick = { transactionType = TransactionType.Expense }
-                        ) {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.TrendingDown,
-                                    contentDescription = "Expense icon"
-                                )
-                                Text("Expense")
-                            }
-                        }
-                    }
+                    IncomeExpenseToggle(
+                        transactionType = transactionType,
+                        onChange = { type -> transactionType = type }
+                    )
                 }
                 FormColumn("Amount") {
                     JJJTextField(

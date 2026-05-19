@@ -1,24 +1,20 @@
 package com.drnkgn.juicejuicejuice.screens.overview
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingDown
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -26,7 +22,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -46,6 +41,7 @@ import com.drnkgn.juicejuicejuice.components.AppTopBar
 import com.drnkgn.juicejuicejuice.components.Chip
 import com.drnkgn.juicejuicejuice.components.calendar.Calendar
 import com.drnkgn.juicejuicejuice.db.relations.TransactionWithTags
+import com.drnkgn.juicejuicejuice.enums.TransactionType
 import com.drnkgn.juicejuicejuice.fakes.FakeTransactions
 import com.drnkgn.juicejuicejuice.states.Resource
 import com.drnkgn.juicejuicejuice.states.UiState
@@ -58,21 +54,25 @@ fun OverviewScreen(
     navController: NavController,
     overviewViewModel: OverviewViewModel = hiltViewModel()
 ) {
-    val getAllTransactionsState by overviewViewModel.indexTransactionState.toCollect()
+    val indexTransactionState by overviewViewModel.indexTransactionState.toCollect()
 
-    fun handleSelectDateChange(date: LocalDate? = null) {
-        overviewViewModel.indexTransactions(date)
+    fun refreshIndexedTransaction(
+        date: LocalDate? = null,
+        type: TransactionType? = null,
+        withDeleted: Boolean = false
+    ) {
+        overviewViewModel.indexTransactions(date, type, withDeleted)
     }
 
     LaunchedEffect(Unit) {
-        handleSelectDateChange()
+        refreshIndexedTransaction()
     }
 
     OverviewContent(
         navController,
-        getAllTransactionsState,
-        onSelectDateChange = { date ->
-            handleSelectDateChange(date)
+        indexTransactionState,
+        onRefreshIndexedTransaction = { date, type, withDeleted ->
+            refreshIndexedTransaction(date, type, withDeleted)
         }
     )
 }
@@ -81,8 +81,11 @@ fun OverviewScreen(
 fun OverviewContent(
     navController: NavController,
     indexTransactionState: UiState<List<TransactionWithTags>>,
-    onSelectDateChange: (LocalDate) -> Unit
+    onRefreshIndexedTransaction: (LocalDate, TransactionType, Boolean) -> Unit
 ) {
+    var filterOpen by remember { mutableStateOf(false) }
+    var filters by remember { mutableStateOf(FilterTransactionResult(TransactionType.Expense, false)) }
+
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var transactions by remember { mutableStateOf<List<TransactionWithTags>>(emptyList()) }
 
@@ -98,13 +101,23 @@ fun OverviewContent(
     Scaffold(
         topBar = {
             AppTopBar(title = "Home") {
-                IconButton(
-                    onClick = { navController.navigate("settings") }
-                ) {
-                    Icon(
-                        Icons.Filled.Settings,
-                        contentDescription = "settings",
-                    )
+                Row {
+                    IconButton(
+                        onClick = { filterOpen = true }
+                    ) {
+                        Icon(
+                            Icons.Filled.FilterList,
+                            contentDescription = "filter",
+                        )
+                    }
+                    IconButton(
+                        onClick = { navController.navigate("settings") }
+                    ) {
+                        Icon(
+                            Icons.Filled.Settings,
+                            contentDescription = "settings",
+                        )
+                    }
                 }
             }
         },
@@ -177,7 +190,7 @@ fun OverviewContent(
                 selectedDate = selectedDate,
                 onValueChange = { day ->
                     selectedDate = day
-                    onSelectDateChange(day)
+                    onRefreshIndexedTransaction(day, filters.transactionType, filters.deleted)
                 }
             )
             Spacer(Modifier.height(10.dp))
@@ -204,6 +217,15 @@ fun OverviewContent(
                     )
                 }
             }
+            FilterTransactionDialog(
+                open = filterOpen,
+                currentFilters = filters,
+                onConfirm = { values ->
+                    filters = values.copy()
+                    onRefreshIndexedTransaction(selectedDate, filters.transactionType, filters.deleted)
+                },
+                onClose = { filterOpen = false }
+            )
         }
     }
 }
@@ -215,7 +237,7 @@ fun OverviewContentPreview() {
         OverviewContent(
             rememberNavController(),
             UiState(data = Resource.Success(FakeTransactions.fakeTransactions)),
-            onSelectDateChange = { }
+            onRefreshIndexedTransaction = { _, _, _ -> }
         )
     }
 }

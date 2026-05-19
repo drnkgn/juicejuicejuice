@@ -1,21 +1,14 @@
 package com.drnkgn.juicejuicejuice.screens.settings.tagSettings.editTag
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.TrendingDown
-import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -43,12 +36,12 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.drnkgn.juicejuicejuice.components.AppTopBar
 import com.drnkgn.juicejuicejuice.components.FormColumn
+import com.drnkgn.juicejuicejuice.components.IncomeExpenseToggle
 import com.drnkgn.juicejuicejuice.components.JJJButton
-import com.drnkgn.juicejuicejuice.components.JJJButtonColors
 import com.drnkgn.juicejuicejuice.components.JJJTextField
-import com.drnkgn.juicejuicejuice.components.JJJToggleableButton
 import com.drnkgn.juicejuicejuice.db.entities.Tag
 import com.drnkgn.juicejuicejuice.db.entities.toForm
+import com.drnkgn.juicejuicejuice.enums.JJJButtonColors
 import com.drnkgn.juicejuicejuice.enums.TransactionType
 import com.drnkgn.juicejuicejuice.fakes.FakeTags
 import com.drnkgn.juicejuicejuice.screens.settings.tagSettings.TagSettingsViewModel
@@ -184,48 +177,14 @@ fun EditTagContent(
                 ) {
                     Column {
                         FormColumn("Transaction Type") {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(10.dp)
-                            ) {
-                                JJJToggleableButton(
-                                    toggled = tagForm.type == TransactionType.Income,
-                                    modifier = Modifier.weight(1f),
-                                    onClick = {
-                                        if (tagForm.deletedAt === null)
-                                            tagForm = tagForm.copy(type = TransactionType.Income)
-                                    }
-                                ) {
-                                    Row(
-                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.AutoMirrored.Filled.TrendingUp,
-                                            contentDescription = "Income icon"
-                                        )
-                                        Text("Income")
+                            IncomeExpenseToggle(
+                                transactionType = tagForm.type,
+                                onChange = { type ->
+                                    if (tagForm.deletedAt === null) {
+                                        tagForm = tagForm.copy(type = type)
                                     }
                                 }
-                                JJJToggleableButton(
-                                    toggled = tagForm.type == TransactionType.Expense,
-                                    modifier = Modifier.weight(1f),
-                                    onClick = {
-                                        if (tagForm.deletedAt === null)
-                                            tagForm = tagForm.copy(type = TransactionType.Expense)
-                                    }
-                                ) {
-                                    Row(
-                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.AutoMirrored.Filled.TrendingDown,
-                                            contentDescription = "Expense icon"
-                                        )
-                                        Text("Expense")
-                                    }
-                                }
-                            }
+                            )
                         }
                         FormColumn("Name") {
                             JJJTextField(

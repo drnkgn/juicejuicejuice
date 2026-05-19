@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -15,6 +16,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.drnkgn.juicejuicejuice.enums.JJJButtonColors
+import com.drnkgn.juicejuicejuice.extensions.ifTrue
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
 
 enum class ClickableTagVariant {
@@ -25,9 +28,16 @@ enum class ClickableTagVariant {
     Outline
 }
 
+enum class ClickableTagSize {
+    Small,
+    Medium
+}
+
 @Composable
 fun ClickableTag(
     variant: ClickableTagVariant = ClickableTagVariant.Filled,
+    size: ClickableTagSize = ClickableTagSize.Small,
+    colors: JJJButtonColors = JJJButtonColors.Default,
     onClick: () -> Unit,
     content: @Composable () -> Unit,
 ) {
@@ -36,8 +46,15 @@ fun ClickableTag(
         ClickableTagVariant.OutlineLight,
         ClickableTagVariant.OutlineContrast -> {
             JJJOutlinedButton(
-                modifier = Modifier.defaultMinSize(minHeight = 1.dp, minWidth = 1.dp),
-                contentPadding = PaddingValues(horizontal = 11.dp, vertical = 6.dp),
+                modifier = Modifier
+                    .ifTrue(size == ClickableTagSize.Small) {
+                        defaultMinSize(minHeight = 1.dp, minWidth = 1.dp)
+                    },
+                contentPadding = when (size) {
+                    ClickableTagSize.Small -> PaddingValues(horizontal = 11.dp, vertical = 6.dp)
+                    ClickableTagSize.Medium -> ButtonDefaults.ContentPadding
+                },
+                colors = colors,
                 variant = when (variant) {
                     ClickableTagVariant.Outline -> JJJOutlinedButtonVariant.Filled
                     ClickableTagVariant.OutlineLight -> JJJOutlinedButtonVariant.Light
@@ -50,12 +67,15 @@ fun ClickableTag(
         }
         else -> {
             JJJButton(
-                modifier = Modifier.defaultMinSize(minHeight = 1.dp, minWidth = 1.dp),
-                contentPadding = PaddingValues(horizontal = 11.dp, vertical = 6.dp),
-                colors = when (variant) {
-                    ClickableTagVariant.Filled -> JJJButtonColors.Primary
-                    else -> JJJButtonColors.Default
+                modifier = Modifier
+                    .ifTrue(size == ClickableTagSize.Small) {
+                        defaultMinSize(minHeight = 1.dp, minWidth = 1.dp)
+                    },
+                contentPadding = when (size) {
+                    ClickableTagSize.Small -> PaddingValues(horizontal = 11.dp, vertical = 6.dp)
+                    ClickableTagSize.Medium -> ButtonDefaults.ContentPadding
                 },
+                colors = colors,
                 shape = RoundedCornerShape(50.dp),
                 onClick = onClick
             ) { content() }
