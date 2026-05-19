@@ -235,7 +235,7 @@ fun EditTransactionContent(
                 FormColumn("Transaction Type") {
                     IncomeExpenseToggle(
                         transactionType = transactionType,
-                        onChange = { type -> transactionType = type }
+                        onChange = { type -> transactionType = type!! }
                     )
                 }
                 FormColumn("Amount") {

@@ -181,7 +181,7 @@ fun EditTagContent(
                                 transactionType = tagForm.type,
                                 onChange = { type ->
                                     if (tagForm.deletedAt === null) {
-                                        tagForm = tagForm.copy(type = type)
+                                        tagForm = tagForm.copy(type = type!!)
                                     }
                                 }
                             )

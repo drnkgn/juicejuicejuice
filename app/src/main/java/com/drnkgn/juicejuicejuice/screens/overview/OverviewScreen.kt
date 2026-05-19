@@ -81,10 +81,10 @@ fun OverviewScreen(
 fun OverviewContent(
     navController: NavController,
     indexTransactionState: UiState<List<TransactionWithTags>>,
-    onRefreshIndexedTransaction: (LocalDate, TransactionType, Boolean) -> Unit
+    onRefreshIndexedTransaction: (LocalDate, TransactionType?, Boolean) -> Unit
 ) {
     var filterOpen by remember { mutableStateOf(false) }
-    var filters by remember { mutableStateOf(FilterTransactionResult(TransactionType.Expense, false)) }
+    var filters by remember { mutableStateOf(FilterTransactionResult(null, false)) }
 
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var transactions by remember { mutableStateOf<List<TransactionWithTags>>(emptyList()) }

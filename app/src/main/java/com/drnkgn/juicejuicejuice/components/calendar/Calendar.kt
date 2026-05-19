@@ -98,7 +98,7 @@ fun Calendar(
                 color = MaterialTheme.colorScheme.tertiary,
                 shape = RoundedCornerShape(10.dp)
             )
-            .padding(20.dp)
+            .padding(horizontal = 20.dp, vertical = 10.dp)
     ) {
         Row(
             modifier = Modifier

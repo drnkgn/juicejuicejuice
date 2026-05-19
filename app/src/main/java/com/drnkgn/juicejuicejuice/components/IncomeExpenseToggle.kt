@@ -17,8 +17,9 @@ import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
 
 @Composable
 fun IncomeExpenseToggle(
-    transactionType: TransactionType = TransactionType.Expense,
-    onChange: (TransactionType) -> Unit
+    enforceValue: Boolean = true,
+    transactionType: TransactionType? = TransactionType.Expense,
+    onChange: (TransactionType?) -> Unit
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -26,7 +27,16 @@ fun IncomeExpenseToggle(
         JJJToggleableButton(
             toggled = transactionType == TransactionType.Income,
             modifier = Modifier.weight(1f),
-            onClick = { onChange(TransactionType.Income) }
+            onClick = {
+                if (enforceValue) {
+                    onChange(TransactionType.Income)
+                } else {
+                    onChange(when (transactionType) {
+                        TransactionType.Income -> null
+                        else -> TransactionType.Income
+                    })
+                }
+            }
         ) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -42,7 +52,16 @@ fun IncomeExpenseToggle(
         JJJToggleableButton(
             toggled = transactionType == TransactionType.Expense,
             modifier = Modifier.weight(1f),
-            onClick = { onChange(TransactionType.Expense) }
+            onClick = {
+                if (enforceValue) {
+                    onChange(TransactionType.Expense)
+                } else {
+                    onChange(when (transactionType) {
+                        TransactionType.Expense -> null
+                        else -> TransactionType.Expense
+                    })
+                }
+            }
         ) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),

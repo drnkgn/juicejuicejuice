@@ -88,7 +88,7 @@ fun NewTagContent(
                         ) {
                             IncomeExpenseToggle(
                                 transactionType = tagType,
-                                onChange = { type -> tagType = type }
+                                onChange = { type -> tagType = type!! }
                             )
                         }
                     }

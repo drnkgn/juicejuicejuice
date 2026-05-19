@@ -35,7 +35,7 @@ import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
 import com.drnkgn.juicejuicejuice.ui.theme.extColors
 
 data class FilterTransactionResult(
-    val transactionType: TransactionType,
+    val transactionType: TransactionType?,
     val deleted: Boolean
 )
 
@@ -61,6 +61,7 @@ fun FilterTransactionDialog(
     ) {
         FormColumn("Type") {
             IncomeExpenseToggle(
+                enforceValue = false,
                 transactionType = stagedFilters.transactionType,
                 onChange = { type ->
                     stagedFilters = stagedFilters.copy(transactionType = type)
