@@ -18,6 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
+import com.drnkgn.juicejuicejuice.utils.stateMapSaver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
@@ -64,7 +66,9 @@ fun Calendar(
     val pagerState = rememberPagerState(initialPage = pageCenter, pageCount = { pageCount })
 
     val keepRange = 2
-    val cache = remember { mutableStateMapOf<Int, List<LocalDate>>() }
+    val cache = rememberSaveable(saver = stateMapSaver<Int, List<LocalDate>>()) {
+        mutableStateMapOf()
+    }
 
     val titleFormatter = DateTimeFormatter.ofPattern("MMM yyyy")
     val currentDate = LocalDate.now()

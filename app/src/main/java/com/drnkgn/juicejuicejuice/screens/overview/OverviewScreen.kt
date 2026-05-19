@@ -27,6 +27,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,10 +65,6 @@ fun OverviewScreen(
         overviewViewModel.indexTransactions(date, type, withDeleted)
     }
 
-    LaunchedEffect(Unit) {
-        refreshIndexedTransaction()
-    }
-
     OverviewContent(
         navController,
         indexTransactionState,
@@ -86,7 +83,7 @@ fun OverviewContent(
     var filterOpen by remember { mutableStateOf(false) }
     var filters by remember { mutableStateOf(FilterTransactionResult(null, false)) }
 
-    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+    var selectedDate by rememberSaveable { mutableStateOf(LocalDate.now()) }
     var transactions by remember { mutableStateOf<List<TransactionWithTags>>(emptyList()) }
 
     LaunchedEffect(indexTransactionState) {
@@ -95,6 +92,12 @@ fun OverviewContent(
                 transactions = indexTransactionState.data.data
             }
             else -> { }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        if (indexTransactionState.data is Resource.Idle) {
+            onRefreshIndexedTransaction(selectedDate, filters.transactionType, filters.deleted)
         }
     }
 
