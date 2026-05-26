@@ -13,6 +13,8 @@ import com.drnkgn.juicejuicejuice.states.UiStateHolder
 import com.drnkgn.juicejuicejuice.utils.Utils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @HiltViewModel
@@ -25,6 +27,7 @@ class TransactionViewModel @Inject constructor(
 
     val createTransactionState = UiStateHolder<Unit>(Resource.Idle)
     val updateTransactionState = UiStateHolder<Unit>(Resource.Idle)
+    val removeTransactionState = UiStateHolder<Unit>(Resource.Idle)
     val getTransactionState = UiStateHolder<TransactionWithTags>(Resource.Idle)
     val getAllTagsState = UiStateHolder<List<Tag>>(Resource.Idle)
 
@@ -70,7 +73,7 @@ class TransactionViewModel @Inject constructor(
         }
     }
 
-    fun updateTransaction(transaction: Transaction, tags: List<Tag>) {
+    fun updateTransactionTags(transaction: Transaction, tags: List<Tag>) {
         viewModelScope.launch {
             updateTransactionState.set(isLoading = true)
 
@@ -83,6 +86,14 @@ class TransactionViewModel @Inject constructor(
             updateTransactionState.set(
                 data = Resource.Success(Unit)
             )
+        }
+    }
+
+    fun removeTransaction(transaction: Transaction) {
+        viewModelScope.launch {
+            removeTransactionState.set(isLoading = true)
+            transactionDao.update(transaction.copy(deletedAt = LocalDateTime.now()))
+            removeTransactionState.set(data = Resource.Success(Unit))
         }
     }
 }

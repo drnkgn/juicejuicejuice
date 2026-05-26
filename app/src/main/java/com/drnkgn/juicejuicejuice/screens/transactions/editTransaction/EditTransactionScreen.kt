@@ -17,13 +17,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -94,7 +100,7 @@ fun EditTransactionScreen(
             transactionViewModel.indexTags(type)
         },
         onUpdate = { transaction, tags ->
-            transactionViewModel.updateTransaction(transaction, tags)
+            transactionViewModel.updateTransactionTags(transaction, tags)
         }
     )
 }
@@ -115,6 +121,10 @@ fun EditTransactionContent(
     var tags by remember { mutableStateOf<List<Tag>>(emptyList()) }
     var tagsOpen by remember { mutableStateOf(false) }
 
+    var moreOptionExpanded by remember { mutableStateOf(false) }
+
+    var removeTransactionDialogOpened by remember { mutableStateOf(false) }
+
     var datePickerOpen by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
 
@@ -125,6 +135,7 @@ fun EditTransactionContent(
     var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
     var selectedTime by remember { mutableStateOf<LocalTime?>(null) }
     var selectedTags by remember { mutableStateOf<List<Tag>>(emptyList())}
+    var deletedAt by remember { mutableStateOf<LocalDateTime?>(null)}
 
     val error = remember { mutableStateMapOf<String, String>() }
 
@@ -203,6 +214,7 @@ fun EditTransactionContent(
             description = transaction.description ?: ""
             selectedDate = transaction.transactionAt.toLocalDate()
             selectedTime = transaction.transactionAt.toLocalTime()
+            deletedAt = transaction.deletedAt
             selectedTags = tags
         }
         else -> { }
@@ -220,7 +232,39 @@ fun EditTransactionContent(
 
     Scaffold(
         topBar = {
-            AppTopBar(title = "Edit Transaction")
+            AppTopBar(title = "Edit Transaction") {
+                if (deletedAt === null) {
+                    Box {
+                        IconButton(
+                            onClick = { moreOptionExpanded = true }
+                        ) {
+                            Icon(
+                                Icons.Filled.MoreVert,
+                                contentDescription = "more",
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = moreOptionExpanded,
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            shape = RoundedCornerShape(20.dp),
+                            onDismissRequest = { moreOptionExpanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        "Remove tag",
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                },
+                                onClick = {
+                                    moreOptionExpanded = false
+                                    removeTransactionDialogOpened = true
+                                }
+                            )
+                        }
+                    }
+                }
+            }
         },
     ) { innerPadding ->
         Column(

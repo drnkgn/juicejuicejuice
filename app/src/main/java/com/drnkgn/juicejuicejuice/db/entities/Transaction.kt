@@ -15,9 +15,9 @@ data class Transaction(
     val transactionAt: LocalDateTime,
     val description: String?,
     @ColumnInfo(name = "created_at", defaultValue = "CURRENT_TIMESTAMP")
-    val createdAt: String? = null,
+    val createdAt: LocalDateTime? = null,
     @ColumnInfo(name = "deleted_at")
-    val deletedAt: String? = null
+    val deletedAt: LocalDateTime? = null
 )
 
 // fun Transaction.toForm() = TransactionUiState(

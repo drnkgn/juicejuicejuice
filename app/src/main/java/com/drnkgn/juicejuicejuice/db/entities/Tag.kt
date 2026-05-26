@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.drnkgn.juicejuicejuice.enums.TransactionType
 import com.drnkgn.juicejuicejuice.states.forms.TagForm
+import java.time.LocalDateTime
 
 @Entity(tableName = "tags")
 data class Tag(
@@ -12,7 +13,7 @@ data class Tag(
     val name: String,
     val type: TransactionType,
     @ColumnInfo(name = "deleted_at")
-    val deletedAt: String? = null,
+    val deletedAt: LocalDateTime? = null,
 )
 
 fun Tag.toForm() = TagForm(

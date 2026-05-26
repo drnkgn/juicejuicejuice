@@ -52,8 +52,11 @@ class TagSettingsViewModel @Inject constructor(
     }
 
     fun removeTag(tag: Tag) {
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-        updateTag(tag.copy(deletedAt = formatter.format(LocalDateTime.now())))
+        viewModelScope.launch {
+            removeTagState.set(isLoading = true)
+            tagDao.update(tag.copy(deletedAt = LocalDateTime.now()))
+            removeTagState.set(data = Resource.Success(Unit))
+        }
     }
 
     fun getTag(id: Int) {
