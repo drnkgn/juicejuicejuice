@@ -14,13 +14,13 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.drnkgn.juicejuicejuice.components.AppTopBar
 import com.drnkgn.juicejuicejuice.components.ClickableTag
 import com.drnkgn.juicejuicejuice.components.ClickableTagVariant
 import com.drnkgn.juicejuicejuice.components.FormColumn
@@ -76,14 +77,7 @@ fun TagSettingsContent(
 
     Scaffold(
         topBar = {
-            Box(
-                modifier = Modifier
-                    .padding(top = 20.dp)
-                    .padding(horizontal = 20.dp)
-                    .windowInsetsPadding(WindowInsets.systemBars)
-            ) {
-                Text("Tags", fontWeight = FontWeight.Bold, fontSize = 26.sp)
-            }
+            AppTopBar(title = "Tags")
         },
         floatingActionButton = {
             FloatingActionButton(
@@ -103,10 +97,10 @@ fun TagSettingsContent(
         Column(
             modifier = Modifier
                 .padding(innerPadding)
+                .padding(horizontal = 20.dp)
         ) {
             Column(
                 modifier = Modifier
-                    .padding(20.dp)
                     .fillMaxWidth()
             ) {
                 FormColumn("Income") {
@@ -137,6 +131,7 @@ fun TagSettingsContent(
                         }
                     }
                 }
+                HorizontalDivider()
                 FormColumn("Expense") {
                     val expenseTags = tags.filter { tag -> tag.type == TransactionType.Expense }
 
@@ -155,7 +150,7 @@ fun TagSettingsContent(
                                 ClickableTag(
                                     variant = when {
                                         tag.deletedAt === null -> ClickableTagVariant.Inverse
-                                        else -> ClickableTagVariant.Outline
+                                        else -> ClickableTagVariant.OutlineContrast
                                     },
                                     onClick = {
                                         navController.navigate("settings/tags/edit/${tag.id}")

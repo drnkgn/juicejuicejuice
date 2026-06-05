@@ -3,6 +3,7 @@ package com.drnkgn.juicejuicejuice.screens.overview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Paid
@@ -28,7 +30,10 @@ import com.drnkgn.juicejuicejuice.components.SmallTag
 import com.drnkgn.juicejuicejuice.db.relations.TransactionWithTags
 import com.drnkgn.juicejuicejuice.enums.TransactionType
 import com.drnkgn.juicejuicejuice.fakes.FakeTransactions
+import com.drnkgn.juicejuicejuice.ui.theme.DangerA0
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
+import com.drnkgn.juicejuicejuice.ui.theme.SuccessA0
+import com.drnkgn.juicejuicejuice.ui.theme.extColors
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -36,80 +41,97 @@ fun TransactionItem(
     transactionWithTags: TransactionWithTags,
     onClick: (() -> Unit)? = null
 ) {
-    Row(
+    Box(
         modifier = Modifier
-            .clickable { onClick?.invoke() }
             .background(
-                color = MaterialTheme.colorScheme.tertiary,
-                shape = RoundedCornerShape(10.dp)
+                color = when (transactionWithTags.transaction.type) {
+                    TransactionType.Income -> SuccessA0
+                    TransactionType.Expense -> DangerA0
+                },
+                shape = RoundedCornerShape(
+                    topStart = 30.dp,
+                    bottomStart = 30.dp,
+                    topEnd = 10.dp,
+                    bottomEnd = 10.dp
+                )
             )
-            .padding(10.dp)
-            .height(70.dp)
-            .fillMaxWidth(),
-        verticalAlignment = Alignment.Top
+            .padding(end = 8.dp)
     ) {
         Row(
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .size(50.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.secondaryContainer,
-                        shape = RoundedCornerShape(10.dp)
-                    ),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Icon(
-                    when (transactionWithTags.transaction.type) {
-                        TransactionType.Income -> Icons.Default.Savings
-                        TransactionType.Expense -> Icons.Default.Paid
-                    },
-                    contentDescription = "Savings",
-                    tint = MaterialTheme.colorScheme.onSecondaryContainer
+            modifier = Modifier
+                .clickable { onClick?.invoke() }
+                .background(
+                    color = MaterialTheme.colorScheme.tertiary,
+                    shape = RoundedCornerShape(
+                        topStart = 10.dp,
+                        bottomStart = 10.dp,
+                        topEnd = 0.dp,
+                        bottomEnd = 0.dp
+                    )
                 )
-            }
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                .padding(10.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.Top
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Row(
+                Column(
+                    modifier = Modifier
+                        .size(50.dp)
+                        .background(
+                            color = when (transactionWithTags.transaction.type) {
+                                TransactionType.Income -> SuccessA0
+                                TransactionType.Expense -> DangerA0
+                            },
+                            shape = RoundedCornerShape(10.dp)
+                        ),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        when (transactionWithTags.transaction.type) {
+                            TransactionType.Income -> Icons.Default.Savings
+                            TransactionType.Expense -> Icons.Default.Paid
+                        },
+                        contentDescription = "Savings",
+                        tint = MaterialTheme.colorScheme.onTertiary
+                    )
+                }
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(0.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Bottom
+                        .height(50.dp)
+                        .weight(1f),
+                    verticalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
-                        text = "$${String.format("%.2f", transactionWithTags.transaction.amount)}",
-                        color = MaterialTheme.colorScheme.onTertiary,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        lineHeight = 14.sp,
-                    )
-                    Text(
-                        text = transactionWithTags.transaction.transactionAt.format(DateTimeFormatter.ofPattern("hh.mm a")),
-                        color = MaterialTheme.colorScheme.onTertiary,
-                        fontSize = 12.sp,
-                        lineHeight = 12.sp,
-                    )
-                }
-                if (!transactionWithTags.transaction.description.isNullOrEmpty()) {
-                    Text(
-                        text = transactionWithTags.transaction.description,
-                        fontSize = 12.sp,
-                        lineHeight = 12.sp,
-                        color = MaterialTheme.colorScheme.onTertiary
-                    )
-                }
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    transactionWithTags.tags.forEach { tag ->
-                        SmallTag(tag.name)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(0.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Bottom
+                    ) {
+                        Text(
+                            text = "RM ${String.format("%.2f", transactionWithTags.transaction.amount)}",
+                            color = MaterialTheme.colorScheme.onTertiary,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            lineHeight = 14.sp,
+                        )
+                        Text(
+                            text = transactionWithTags.transaction.transactionAt.format(DateTimeFormatter.ofPattern("hh.mm a")),
+                            color = MaterialTheme.extColors.placeholder,
+                            fontSize = 12.sp,
+                            lineHeight = 12.sp,
+                        )
+                    }
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        transactionWithTags.tags.forEach { tag ->
+                            SmallTag(tag.name)
+                        }
                     }
                 }
             }

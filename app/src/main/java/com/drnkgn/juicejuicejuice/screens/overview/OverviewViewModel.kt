@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.drnkgn.juicejuicejuice.db.AppDatabase
 import com.drnkgn.juicejuicejuice.db.relations.TransactionWithTags
+import com.drnkgn.juicejuicejuice.enums.TransactionType
 import com.drnkgn.juicejuicejuice.states.Resource
 import com.drnkgn.juicejuicejuice.states.UiStateHolder
 import com.drnkgn.juicejuicejuice.utils.Utils
@@ -21,7 +22,11 @@ class OverviewViewModel @Inject constructor(
 
     val indexTransactionState = UiStateHolder<List<TransactionWithTags>>(Resource.Idle)
 
-    fun indexTransactions(date: LocalDate? = null) {
+    fun indexTransactions(
+        date: LocalDate? = null,
+        type: TransactionType? = null,
+        withDeleted: Boolean = false
+    ) {
         var queryDate: String? = null
         if (date is LocalDate) {
             val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
@@ -32,7 +37,7 @@ class OverviewViewModel @Inject constructor(
             indexTransactionState.set(isLoading = true)
             indexTransactionState.set(
                 isLoading = false,
-                data = Utils.safeApiCall { transactionDao.index(queryDate) }
+                data = Utils.safeApiCall { transactionDao.index(queryDate, type, withDeleted) }
             )
         }
     }
