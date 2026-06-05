@@ -30,7 +30,9 @@ import com.drnkgn.juicejuicejuice.components.SmallTag
 import com.drnkgn.juicejuicejuice.db.relations.TransactionWithTags
 import com.drnkgn.juicejuicejuice.enums.TransactionType
 import com.drnkgn.juicejuicejuice.fakes.FakeTransactions
+import com.drnkgn.juicejuicejuice.ui.theme.DangerA0
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
+import com.drnkgn.juicejuicejuice.ui.theme.SuccessA0
 import com.drnkgn.juicejuicejuice.ui.theme.extColors
 import java.time.format.DateTimeFormatter
 
@@ -43,8 +45,8 @@ fun TransactionItem(
         modifier = Modifier
             .background(
                 color = when (transactionWithTags.transaction.type) {
-                    TransactionType.Income -> MaterialTheme.extColors.success
-                    TransactionType.Expense -> MaterialTheme.colorScheme.error
+                    TransactionType.Income -> SuccessA0
+                    TransactionType.Expense -> DangerA0
                 },
                 shape = RoundedCornerShape(
                     topStart = 30.dp,
@@ -79,8 +81,8 @@ fun TransactionItem(
                         .size(50.dp)
                         .background(
                             color = when (transactionWithTags.transaction.type) {
-                                TransactionType.Income -> MaterialTheme.extColors.success
-                                TransactionType.Expense -> MaterialTheme.colorScheme.error
+                                TransactionType.Income -> SuccessA0
+                                TransactionType.Expense -> DangerA0
                             },
                             shape = RoundedCornerShape(10.dp)
                         ),
@@ -119,7 +121,7 @@ fun TransactionItem(
                         )
                         Text(
                             text = transactionWithTags.transaction.transactionAt.format(DateTimeFormatter.ofPattern("hh.mm a")),
-                            color = MaterialTheme.colorScheme.onTertiary,
+                            color = MaterialTheme.extColors.placeholder,
                             fontSize = 12.sp,
                             lineHeight = 12.sp,
                         )

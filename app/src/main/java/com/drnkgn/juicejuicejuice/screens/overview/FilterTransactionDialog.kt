@@ -26,6 +26,7 @@ import com.drnkgn.juicejuicejuice.components.ClickableTag
 import com.drnkgn.juicejuicejuice.components.ClickableTagSize
 import com.drnkgn.juicejuicejuice.components.ClickableTagVariant
 import com.drnkgn.juicejuicejuice.components.FormColumn
+import com.drnkgn.juicejuicejuice.components.FormColumnSpacings
 import com.drnkgn.juicejuicejuice.components.IncomeExpenseToggle
 import com.drnkgn.juicejuicejuice.components.JJJOutlinedButton
 import com.drnkgn.juicejuicejuice.components.JJJOutlinedButtonVariant
@@ -59,7 +60,10 @@ fun FilterTransactionDialog(
         title = "Filter transactions",
         onDismissRequest = onClose
     ) {
-        FormColumn("Type") {
+        FormColumn(
+            header = "Type",
+            spacings = FormColumnSpacings(top = 0.dp)
+        ) {
             IncomeExpenseToggle(
                 enforceValue = false,
                 transactionType = stagedFilters.transactionType,
