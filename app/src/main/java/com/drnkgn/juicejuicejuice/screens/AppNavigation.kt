@@ -6,25 +6,36 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.drnkgn.juicejuicejuice.screens.transactions.newTransaction.NewTransactionScreen
+import com.drnkgn.juicejuicejuice.BuildConfig
 import com.drnkgn.juicejuicejuice.screens.overview.OverviewScreen
 import com.drnkgn.juicejuicejuice.screens.settings.SettingsScreen
 import com.drnkgn.juicejuicejuice.screens.settings.tagSettings.TagSettingsScreen
 import com.drnkgn.juicejuicejuice.screens.settings.tagSettings.editTag.EditTagScreen
 import com.drnkgn.juicejuicejuice.screens.settings.tagSettings.newTag.NewTagScreen
 import com.drnkgn.juicejuicejuice.screens.transactions.editTransaction.EditTransactionScreen
+import com.drnkgn.juicejuicejuice.screens.transactions.newTransaction.NewTransactionScreen
 
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+    val isDebug = BuildConfig.DEBUG
 
     Surface(
         color = MaterialTheme.colorScheme.background
@@ -77,6 +88,22 @@ fun AppNavigation() {
                 arguments = listOf(navArgument("id") { type = NavType.IntType })
             ) { backStackEntry ->
                 EditTagScreen(navController, tagId = backStackEntry.arguments?.getInt("id"))
+            }
+        }
+
+        if (isDebug) {
+            Box(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter)
+                        .background(color = MaterialTheme.colorScheme.error),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text("Development Build", fontSize = 12.sp)
+                }
             }
         }
     }
