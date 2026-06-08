@@ -47,10 +47,11 @@ class OverviewViewModel @Inject constructor(
             indexTransactionState.set(isLoading = true)
             overviewStatsState.set(isLoading = true)
 
-            val pTxn = Utils.safeApiCall { transactionDao.index(queryDate, type, withDeleted) }
-            val qTxn = Utils.safeApiCall { transactionDao.index(dayBeforeQueryDate, type, withDeleted) }
+            val txns = Utils.safeApiCall { transactionDao.index(queryDate, type, withDeleted) }
+            val pTxn = Utils.safeApiCall { transactionDao.index(queryDate, type, false) }
+            val qTxn = Utils.safeApiCall { transactionDao.index(dayBeforeQueryDate, type, false) }
 
-            indexTransactionState.set(isLoading = false, data = pTxn)
+            indexTransactionState.set(isLoading = false, data = txns)
             overviewStatsState.set(
                 isLoading = false,
                 data = when {
