@@ -1,5 +1,6 @@
 package com.drnkgn.juicejuicejuice.screens.overview
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,6 +37,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.drnkgn.juicejuicejuice.components.AppTopBar
@@ -48,6 +52,7 @@ import com.drnkgn.juicejuicejuice.enums.TransactionType
 import com.drnkgn.juicejuicejuice.fakes.FakeTransactions
 import com.drnkgn.juicejuicejuice.states.Resource
 import com.drnkgn.juicejuicejuice.states.UiState
+import com.drnkgn.juicejuicejuice.states.UiStateHolder
 import com.drnkgn.juicejuicejuice.states.getOrNull
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
 import com.drnkgn.juicejuicejuice.ui.theme.extColors
@@ -60,7 +65,7 @@ fun OverviewScreen(
     navController: NavController,
     overviewViewModel: OverviewViewModel = hiltViewModel()
 ) {
-    val indexTransactionState by overviewViewModel.indexTransactionState.toCollect()
+    val indexTransactionStateHolder = overviewViewModel.indexTransactionState
     val overviewStatsState by overviewViewModel.overviewStatsState.toCollect()
 
     fun refreshIndexedTransaction(
@@ -73,7 +78,7 @@ fun OverviewScreen(
 
     OverviewContent(
         navController,
-        indexTransactionState,
+        indexTransactionStateHolder,
         overviewStatsState,
         onRefreshIndexedTransaction = { date, type, withDeleted ->
             refreshIndexedTransaction(date, type, withDeleted)
@@ -84,28 +89,33 @@ fun OverviewScreen(
 @Composable
 fun OverviewContent(
     navController: NavController,
-    indexTransactionState: UiState<List<TransactionWithTags>>,
+    indexTransactionStateHolder: UiStateHolder<List<TransactionWithTags>>,
     overviewStatsState: UiState<OverviewStatsDTO>,
     onRefreshIndexedTransaction: (LocalDate, TransactionType?, Boolean) -> Unit
 ) {
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+
+    val indexTransactionState by indexTransactionStateHolder.toCollect()
+
     var filterOpen by remember { mutableStateOf(false) }
     var filters by remember { mutableStateOf(FilterTransactionResult(null, false)) }
 
     var selectedDate by rememberSaveable { mutableStateOf(LocalDate.now()) }
     var transactions by remember { mutableStateOf<List<TransactionWithTags>>(emptyList()) }
 
-    LaunchedEffect(indexTransactionState) {
-        when (indexTransactionState.data) {
-            is Resource.Success -> {
-                transactions = indexTransactionState.data.data
-            }
-            else -> { }
+    when (indexTransactionState.data) {
+        is Resource.Success -> {
+            transactions = (indexTransactionState.data as Resource.Success<List<TransactionWithTags>>).data
+            indexTransactionStateHolder.set(data = Resource.Idle)
         }
+        else -> { }
     }
 
     LaunchedEffect(Unit) {
-        if (indexTransactionState.data is Resource.Idle) {
-            onRefreshIndexedTransaction(selectedDate, filters.transactionType, filters.deleted)
+        lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            if (indexTransactionState.data is Resource.Idle) {
+                onRefreshIndexedTransaction(selectedDate, filters.transactionType, filters.deleted)
+            }
         }
     }
 
@@ -285,7 +295,7 @@ fun OverviewContentPreview() {
     JuiceJuiceJuiceTheme {
         OverviewContent(
             rememberNavController(),
-            UiState(data = Resource.Success(FakeTransactions.fakeTransactions)),
+            UiStateHolder(initial = Resource.Success(FakeTransactions.fakeTransactions)),
             UiState(data = Resource.Success(OverviewStatsDTO(9f, 8f, 12.5f, -5.3f))),
             onRefreshIndexedTransaction = { _, _, _ -> }
         )
