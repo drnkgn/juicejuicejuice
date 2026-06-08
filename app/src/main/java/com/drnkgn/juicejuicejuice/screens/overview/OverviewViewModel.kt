@@ -83,10 +83,19 @@ class OverviewViewModel @Inject constructor(
         val pTxnExpTotal = pTxnExp.fold(0f) { acc, txn -> acc + txn.transaction.amount }
         val qTxnExpTotal = qTxnExp.fold(0f) { acc, txn -> acc + txn.transaction.amount }
 
-        // val txnIncPctDiff = ((pTxnIncTotal-qTxnIncTotal)/min(pTxnIncTotal, qTxnIncTotal))*100
-        // val txnExpPctDiff = ((pTxnExpTotal-qTxnExpTotal)/min(pTxnExpTotal, qTxnExpTotal))*100
-        val txnIncPctDiff = 0f
-        val txnExpPctDiff = 0f
+        val txnIncPctDiff = when {
+            pTxnIncTotal == 0f && qTxnIncTotal == 0f -> 0f
+            qTxnIncTotal == 0f -> 100f
+            pTxnIncTotal == 0f -> -100f
+            else -> ((pTxnIncTotal-qTxnIncTotal)/qTxnIncTotal)*100
+        }
+
+        val txnExpPctDiff = when {
+            pTxnExpTotal == 0f && qTxnExpTotal == 0f -> 0f
+            qTxnExpTotal == 0f -> 100f
+            pTxnExpTotal == 0f -> -100f
+            else -> ((pTxnExpTotal-qTxnExpTotal)/qTxnExpTotal)*100
+        }
 
         return OverviewStatsDTO(
             income = pTxnIncTotal,

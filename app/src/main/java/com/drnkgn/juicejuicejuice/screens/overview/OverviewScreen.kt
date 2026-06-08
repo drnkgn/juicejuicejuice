@@ -174,13 +174,17 @@ fun OverviewContent(
                             val incomePctDiff = overviewStatsState.getOrNull()?.incomePctDiff ?: 0f
                             Chip(
                                 text = "%.1f%%".format(Locale.UK, incomePctDiff),
-                                color = when (incomePctDiff.sign) {
-                                    -1.0f -> ChipTrend.Positive
-                                    else -> ChipTrend.Negative
+                                color = when {
+                                    incomePctDiff == 0f -> ChipTrend.Neutral
+                                    incomePctDiff.sign == -1.0f -> ChipTrend.Positive
+                                    incomePctDiff.sign == 1.0f -> ChipTrend.Negative
+                                    else -> ChipTrend.Neutral
                                 },
-                                trend = when (incomePctDiff.sign) {
-                                    -1.0f -> ChipTrend.Negative
-                                    else -> ChipTrend.Positive
+                                trend = when {
+                                    incomePctDiff == 0f -> ChipTrend.Neutral
+                                    incomePctDiff.sign == -1.0f -> ChipTrend.Negative
+                                    incomePctDiff.sign == 1.0f -> ChipTrend.Positive
+                                    else -> ChipTrend.Neutral
                                 }
                             )
                         }
@@ -209,13 +213,17 @@ fun OverviewContent(
                             val expensePctDiff = overviewStatsState.getOrNull()?.expensePctDiff ?: 0f
                             Chip(
                                 text = "%.1f%%".format(Locale.UK, expensePctDiff),
-                                color = when (expensePctDiff.sign) {
-                                     -1.0f -> ChipTrend.Positive
-                                    else -> ChipTrend.Negative
+                                color = when {
+                                    expensePctDiff == 0f -> ChipTrend.Neutral
+                                    expensePctDiff.sign == -1.0f -> ChipTrend.Positive
+                                    expensePctDiff.sign == 1.0f -> ChipTrend.Negative
+                                    else -> ChipTrend.Neutral
                                 },
-                                trend = when (expensePctDiff.sign) {
-                                    -1.0f -> ChipTrend.Negative
-                                    else -> ChipTrend.Positive
+                                trend = when {
+                                    expensePctDiff == 0f -> ChipTrend.Neutral
+                                    expensePctDiff.sign == -1.0f -> ChipTrend.Negative
+                                    expensePctDiff.sign == 1.0f -> ChipTrend.Positive
+                                    else -> ChipTrend.Neutral
                                 }
                             )
                         }

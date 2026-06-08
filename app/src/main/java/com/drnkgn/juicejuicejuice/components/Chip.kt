@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -23,7 +24,8 @@ import com.drnkgn.juicejuicejuice.ui.theme.extColors
 
 enum class ChipTrend {
     Positive,
-    Negative
+    Negative,
+    Neutral
 }
 
 @Composable
@@ -34,6 +36,9 @@ fun getColorMap(variant: ChipTrend): List<Color> {
         }
         ChipTrend.Negative -> {
             listOf(MaterialTheme.colorScheme.error, MaterialTheme.colorScheme.onError)
+        }
+        ChipTrend.Neutral -> {
+            listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.onPrimary)
         }
     }
 }
@@ -58,6 +63,7 @@ fun Chip(
             when (trend) {
                 ChipTrend.Positive -> Icons.Default.ExpandLess
                 ChipTrend.Negative -> Icons.Default.ExpandMore
+                ChipTrend.Neutral -> Icons.Default.Remove
             },
             contentDescription = "Extra label",
             tint = colorMap[1],
