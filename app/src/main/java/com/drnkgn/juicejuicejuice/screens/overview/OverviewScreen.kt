@@ -1,8 +1,6 @@
 package com.drnkgn.juicejuicejuice.screens.overview
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -42,15 +40,20 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.drnkgn.juicejuicejuice.components.AppTopBar
 import com.drnkgn.juicejuicejuice.components.Chip
+import com.drnkgn.juicejuicejuice.components.ChipTrend
 import com.drnkgn.juicejuicejuice.components.calendar.Calendar
+import com.drnkgn.juicejuicejuice.db.dto.OverviewStatsDTO
 import com.drnkgn.juicejuicejuice.db.relations.TransactionWithTags
 import com.drnkgn.juicejuicejuice.enums.TransactionType
 import com.drnkgn.juicejuicejuice.fakes.FakeTransactions
 import com.drnkgn.juicejuicejuice.states.Resource
 import com.drnkgn.juicejuicejuice.states.UiState
+import com.drnkgn.juicejuicejuice.states.getOrNull
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
 import com.drnkgn.juicejuicejuice.ui.theme.extColors
 import java.time.LocalDate
+import java.util.Locale
+import kotlin.math.sign
 
 @Composable
 fun OverviewScreen(
@@ -58,6 +61,7 @@ fun OverviewScreen(
     overviewViewModel: OverviewViewModel = hiltViewModel()
 ) {
     val indexTransactionState by overviewViewModel.indexTransactionState.toCollect()
+    val overviewStatsState by overviewViewModel.overviewStatsState.toCollect()
 
     fun refreshIndexedTransaction(
         date: LocalDate? = null,
@@ -70,6 +74,7 @@ fun OverviewScreen(
     OverviewContent(
         navController,
         indexTransactionState,
+        overviewStatsState,
         onRefreshIndexedTransaction = { date, type, withDeleted ->
             refreshIndexedTransaction(date, type, withDeleted)
         }
@@ -80,6 +85,7 @@ fun OverviewScreen(
 fun OverviewContent(
     navController: NavController,
     indexTransactionState: UiState<List<TransactionWithTags>>,
+    overviewStatsState: UiState<OverviewStatsDTO>,
     onRefreshIndexedTransaction: (LocalDate, TransactionType?, Boolean) -> Unit
 ) {
     var filterOpen by remember { mutableStateOf(false) }
@@ -164,10 +170,25 @@ fun OverviewContent(
                                 Icons.AutoMirrored.Filled.TrendingUp,
                                 contentDescription = "Income"
                             )
-                            Chip(text = "+12%")
+
+                            val incomePctDiff = overviewStatsState.getOrNull()?.incomePctDiff ?: 0f
+                            Chip(
+                                text = "%.1f%%".format(Locale.UK, incomePctDiff),
+                                color = when (incomePctDiff.sign) {
+                                    -1.0f -> ChipTrend.Positive
+                                    else -> ChipTrend.Negative
+                                },
+                                trend = when (incomePctDiff.sign) {
+                                    -1.0f -> ChipTrend.Negative
+                                    else -> ChipTrend.Positive
+                                }
+                            )
                         }
                         Text("Income")
-                        Text("$487.30", fontWeight = FontWeight.Bold, fontSize = 22.sp)
+                        Text(
+                            text = "$%.2f".format(Locale.UK, overviewStatsState.getOrNull()?.income ?: 0f),
+                            fontWeight = FontWeight.Bold, fontSize = 22.sp
+                        )
                     }
                 }
                 TopCard(modifier = Modifier.weight(1f)) {
@@ -181,13 +202,28 @@ fun OverviewContent(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                Icons.AutoMirrored.Filled.TrendingDown,
+                                imageVector = Icons.AutoMirrored.Filled.TrendingDown,
                                 contentDescription = "Expense"
                             )
-                            Chip(text = "-5%", variant = "error")
+
+                            val expensePctDiff = overviewStatsState.getOrNull()?.expensePctDiff ?: 0f
+                            Chip(
+                                text = "%.1f%%".format(Locale.UK, expensePctDiff),
+                                color = when (expensePctDiff.sign) {
+                                     -1.0f -> ChipTrend.Positive
+                                    else -> ChipTrend.Negative
+                                },
+                                trend = when (expensePctDiff.sign) {
+                                    -1.0f -> ChipTrend.Negative
+                                    else -> ChipTrend.Positive
+                                }
+                            )
                         }
                         Text("Expense")
-                        Text("$1,475.30", fontWeight = FontWeight.Bold, fontSize = 22.sp)
+                        Text(
+                            text = "$%.2f".format(Locale.UK, overviewStatsState.getOrNull()?.expense ?: 0f),
+                            fontWeight = FontWeight.Bold, fontSize = 22.sp
+                        )
                     }
                 }
             }
@@ -242,6 +278,7 @@ fun OverviewContentPreview() {
         OverviewContent(
             rememberNavController(),
             UiState(data = Resource.Success(FakeTransactions.fakeTransactions)),
+            UiState(data = Resource.Success(OverviewStatsDTO(9f, 8f, 12.5f, -5.3f))),
             onRefreshIndexedTransaction = { _, _, _ -> }
         )
     }
