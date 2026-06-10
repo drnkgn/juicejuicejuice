@@ -186,7 +186,11 @@ fun OverviewContent(
                     .padding(bottom = 20.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                TopCard(modifier = Modifier.weight(1f)) {
+                TopCard(
+                    modifier = Modifier
+                        .height(100.dp)
+                        .weight(1f)
+                ) {
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.SpaceBetween
@@ -225,7 +229,11 @@ fun OverviewContent(
                         )
                     }
                 }
-                TopCard(modifier = Modifier.weight(1f)) {
+                TopCard(
+                    modifier = Modifier
+                        .height(100.dp)
+                        .weight(1f)
+                ) {
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.SpaceBetween
