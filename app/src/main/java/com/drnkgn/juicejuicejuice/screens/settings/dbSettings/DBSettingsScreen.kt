@@ -2,6 +2,7 @@ package com.drnkgn.juicejuicejuice.screens.settings.dbSettings
 
 import android.net.Uri
 import android.provider.DocumentsContract
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -45,7 +46,8 @@ fun DBSettingsContent() {
     ) { uri ->
         uri?.let {
             selectedUri = it
-            fileToExport = File(context.dataDir, "app_database")
+            val databaseDir = File(context.filesDir.parent, "databases")
+            fileToExport = File(databaseDir, "app_database")
             exportConfirmOpen = true
         }
     }
@@ -85,16 +87,26 @@ fun DBSettingsContent() {
             exportConfirmOpen,
             uri = selectedUri,
             onConfirm = {
-                selectedUri?.let {
+                selectedUri?.let { folderUri ->
                     val fileName = "app_db_export"
-                    val newFileUri = DocumentsContract.buildDocumentUriUsingTree(
-                        it,
-                        "${DocumentsContract.getTreeDocumentId(it)}/$fileName"
+                    val parentUri = DocumentsContract.buildDocumentUriUsingTree(
+                        folderUri,
+                        DocumentsContract.getTreeDocumentId(folderUri)
+                    )
+                    val outputUri = DocumentsContract.createDocument(
+                        context.contentResolver, parentUri,
+                        "application/octet-stream",
+                        fileName
                     )
 
-                    context.contentResolver.openOutputStream(newFileUri)?.use { output ->
-                        fileToExport?.inputStream()?.copyTo(output)
-                        Toast.makeText(context, "Export successfully", Toast.LENGTH_LONG).show()
+                    outputUri?.let { outputUri ->
+                        context.contentResolver.openOutputStream(outputUri)?.use { output ->
+                            fileToExport?.inputStream()?.use { input ->
+                                input.copyTo(output)
+                            }
+                            Toast.makeText(context, "Export successfully", Toast.LENGTH_LONG).show()
+                            exportConfirmOpen = false
+                        }
                     }
                 }
             },
