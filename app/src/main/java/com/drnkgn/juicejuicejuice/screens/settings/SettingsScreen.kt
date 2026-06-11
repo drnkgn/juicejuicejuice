@@ -10,8 +10,12 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Dataset
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Savings
+import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Tag
+import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -50,6 +54,7 @@ fun SettingsContent(navController: NavController) {
             ) {
                 SettingsItem(Icons.Filled.Tag, "Tags", "Manage all tags") { navController.navigate("settings/tags") }
                 SettingsItem(Icons.Filled.Savings, "Budgets", "Manage your budget") { }
+                SettingsItem(Icons.Filled.Storage, "Database", "Manage your database.") { navController.navigate("settings/database") }
             }
         }
     }

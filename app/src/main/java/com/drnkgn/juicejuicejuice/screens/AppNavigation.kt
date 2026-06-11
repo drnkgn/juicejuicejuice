@@ -36,6 +36,8 @@ import com.drnkgn.juicejuicejuice.screens.overview.OverviewContent
 import com.drnkgn.juicejuicejuice.screens.overview.OverviewContentMock
 import com.drnkgn.juicejuicejuice.screens.overview.OverviewScreen
 import com.drnkgn.juicejuicejuice.screens.settings.SettingsScreen
+import com.drnkgn.juicejuicejuice.screens.settings.dbSettings.DBSettingsContent
+import com.drnkgn.juicejuicejuice.screens.settings.dbSettings.DBSettingsScreen
 import com.drnkgn.juicejuicejuice.screens.settings.tagSettings.TagSettingsScreen
 import com.drnkgn.juicejuicejuice.screens.settings.tagSettings.editTag.EditTagScreen
 import com.drnkgn.juicejuicejuice.screens.settings.tagSettings.newTag.NewTagScreen
@@ -92,6 +94,7 @@ fun AppNavigation() {
             }
 
             composable("settings") { SettingsScreen(navController) }
+
             composable("settings/tags") { TagSettingsScreen(navController) }
             composable("settings/tags/new") {
                 NewTagScreen(navController)
@@ -102,6 +105,8 @@ fun AppNavigation() {
             ) { backStackEntry ->
                 EditTagScreen(navController, tagId = backStackEntry.arguments?.getInt("id"))
             }
+            
+            composable("settings/database") { DBSettingsScreen() }
         }
     }
 }
