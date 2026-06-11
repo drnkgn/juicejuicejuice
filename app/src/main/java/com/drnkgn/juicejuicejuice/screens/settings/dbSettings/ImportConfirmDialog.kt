@@ -16,21 +16,21 @@ import com.drnkgn.juicejuicejuice.components.BDialog
 import com.drnkgn.juicejuicejuice.components.JJJButton
 import com.drnkgn.juicejuicejuice.enums.JJJButtonColors
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
-import com.drnkgn.juicejuicejuice.utils.Utils
+import java.io.File
 
 @Composable
-fun ExportConfirmDialog(
+fun ImportConfirmDialog(
     open: Boolean = false,
-    uri: Uri? = null,
+    file: File? = null,
     onConfirm: (() -> Unit),
     onClose: (() -> Unit)
 ) {
     BDialog(
         open = open,
-        title = "Export database",
+        title = "Import database",
         onDismissRequest = onClose
     ) {
-        Text("Are you sure to export to ${Utils.getFolderName(uri)}?")
+        Text("Are you sure to import ${file?.name ?: "nofile"}? This action will override your local database and is DESTRUCTIVE.")
         Row(
             modifier = Modifier.padding(top = 20.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -59,9 +59,9 @@ fun ExportConfirmDialog(
 
 @Preview
 @Composable
-fun ExportConfirmDialogPreview() {
+fun ImportConfirmDialogPreview() {
     JuiceJuiceJuiceTheme {
-        ExportConfirmDialog(
+        ImportConfirmDialog(
             open = true,
             onConfirm = { },
             onClose = { }
