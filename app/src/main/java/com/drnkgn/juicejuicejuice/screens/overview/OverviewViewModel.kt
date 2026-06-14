@@ -2,10 +2,10 @@ package com.drnkgn.juicejuicejuice.screens.overview
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.drnkgn.juicejuicejuice.db.AppDatabase
 import com.drnkgn.juicejuicejuice.db.dto.OverviewStatsDTO
 import com.drnkgn.juicejuicejuice.db.relations.TransactionWithTags
 import com.drnkgn.juicejuicejuice.enums.TransactionType
+import com.drnkgn.juicejuicejuice.DatabaseManager
 import com.drnkgn.juicejuicejuice.states.Resource
 import com.drnkgn.juicejuicejuice.states.UiStateHolder
 import com.drnkgn.juicejuicejuice.utils.Utils
@@ -14,12 +14,13 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
-import kotlin.math.min
 
 @HiltViewModel
 class OverviewViewModel @Inject constructor(
-    database: AppDatabase
+    databaseManager: DatabaseManager
 ): ViewModel() {
+    private val database = databaseManager.getDb()
+
     private val transactionDao = database.transaction()
 
     val indexTransactionState = UiStateHolder<List<TransactionWithTags>>(Resource.Idle)

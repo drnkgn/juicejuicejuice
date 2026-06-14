@@ -1,6 +1,5 @@
 package com.drnkgn.juicejuicejuice.screens.analytics
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,9 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
-import com.drnkgn.juicejuicejuice.ui.theme.SurfaceA10
 import com.drnkgn.juicejuicejuice.ui.theme.SurfaceA20
-import com.drnkgn.juicejuicejuice.ui.theme.SurfaceA30
 import com.drnkgn.juicejuicejuice.ui.theme.extColors
 import io.github.koalaplot.core.ChartLayout
 import io.github.koalaplot.core.bar.DefaultBar

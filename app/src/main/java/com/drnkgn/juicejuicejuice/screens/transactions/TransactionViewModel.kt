@@ -2,25 +2,26 @@ package com.drnkgn.juicejuicejuice.screens.transactions
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.drnkgn.juicejuicejuice.db.AppDatabase
 import com.drnkgn.juicejuicejuice.db.entities.Tag
 import com.drnkgn.juicejuicejuice.db.entities.Transaction
 import com.drnkgn.juicejuicejuice.db.entities.TransactionTagsPivot
 import com.drnkgn.juicejuicejuice.db.relations.TransactionWithTags
 import com.drnkgn.juicejuicejuice.enums.TransactionType
+import com.drnkgn.juicejuicejuice.DatabaseManager
 import com.drnkgn.juicejuicejuice.states.Resource
 import com.drnkgn.juicejuicejuice.states.UiStateHolder
 import com.drnkgn.juicejuicejuice.utils.Utils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @HiltViewModel
 class TransactionViewModel @Inject constructor(
-    database: AppDatabase
+    databaseManager: DatabaseManager
 ): ViewModel() {
+    private val database = databaseManager.getDb()
+
     private val transactionTagsDao = database.transactionTags()
     private val transactionDao = database.transaction()
     private val tagDao = database.tag()

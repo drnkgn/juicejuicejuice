@@ -2,9 +2,6 @@ package com.drnkgn.juicejuicejuice.screens.settings.dbSettings
 
 import android.content.Context
 import android.net.Uri
-import android.provider.DocumentsContract
-import android.provider.OpenableColumns
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -16,7 +13,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -24,74 +20,92 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.drnkgn.juicejuicejuice.components.AppTopBar
 import com.drnkgn.juicejuicejuice.components.FormColumn
 import com.drnkgn.juicejuicejuice.components.JJJButton
-import com.drnkgn.juicejuicejuice.db.DBSchema
+import com.drnkgn.juicejuicejuice.states.Resource
+import com.drnkgn.juicejuicejuice.states.UiState
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
-import com.drnkgn.juicejuicejuice.utils.Utils
-import java.io.File
 
 @Composable
-fun DBSettingsScreen() {
-    DBSettingsContent()
+fun DBSettingsScreen(
+    dbSettingsViewModel: DBSettingsViewModel = hiltViewModel()
+) {
+    val exportDBState by dbSettingsViewModel.exportDBState.toCollect()
+    val importDBState by dbSettingsViewModel.importDBState.toCollect()
+
+    DBSettingsContent(
+        exportDBState = exportDBState,
+        importDBState = importDBState,
+        onExport = { context, folderUri ->
+            dbSettingsViewModel.exportDatabase(context, folderUri)
+        },
+        onImport = { context, fileUri ->
+            dbSettingsViewModel.importDatabase(context, fileUri)
+        }
+    )
 }
 
 @Composable
-fun DBSettingsContent() {
+fun DBSettingsContent(
+    exportDBState: UiState<Unit>,
+    importDBState: UiState<Unit>,
+    onExport: (Context, Uri) -> Unit,
+    onImport: (Context, Uri) -> Unit,
+) {
     val context = LocalContext.current
 
     var exportConfirmOpen by remember { mutableStateOf(false) }
     var importConfirmOpen by remember { mutableStateOf(false) }
 
-    var selectedUri by remember { mutableStateOf<Uri?>(null) }
-    var filesToExport = remember { mutableStateListOf<List<File>>(emptyList()) }
-    var fileToImport by remember { mutableStateOf<File?>(null) }
+    var exportFolderUri by remember { mutableStateOf<Uri?>(null) }
+    var importFileUri by remember { mutableStateOf<Uri?>(null) }
 
     val folderPicker = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocumentTree()
     ) { uri ->
         uri?.let {
-            selectedUri = it
-            val databaseDir = File(context.filesDir.parent, "databases")
-            filesToExport
-            fileToExport = File(databaseDir, "app_database")
+            exportFolderUri = it
             exportConfirmOpen = true
         }
     }
 
-    val filePicker = rememberLauncherForActivityResult(
+    val filesPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
         uri?.let {
-            fileToImport = Utils.uriToFile(it, context)
+            importFileUri = uri
             importConfirmOpen = true
         }
     }
 
     fun onExportConfirm() {
-        selectedUri?.let { folderUri ->
-            val fileName = "app_db_export"
-            val parentUri = DocumentsContract.buildDocumentUriUsingTree(
-                folderUri,
-                DocumentsContract.getTreeDocumentId(folderUri)
-            )
-            val outputUri = DocumentsContract.createDocument(
-                context.contentResolver, parentUri,
-                "application/octet-stream",
-                fileName
-            )
-
-            outputUri?.let { outputUri ->
-                context.contentResolver.openOutputStream(outputUri)?.use { output ->
-                    fileToExport?.inputStream()?.use { input ->
-                        input.copyTo(output)
-                    }
-                    Toast.makeText(context, "Export successfully", Toast.LENGTH_LONG).show()
-                    exportConfirmOpen = false
-                }
-            }
+        exportFolderUri?.let { folderUri ->
+            onExport(context, folderUri)
         }
+    }
+
+    fun onImportConfirm() {
+        importFileUri?.let { fileUri ->
+            onImport(context, fileUri)
+        }
+    }
+
+    when (exportDBState.data) {
+        is Resource.Success -> {
+            Toast.makeText(context, "Export successfully", Toast.LENGTH_LONG).show()
+            exportConfirmOpen = false
+        }
+        else -> { }
+    }
+
+    when (importDBState.data) {
+        is Resource.Success -> {
+            Toast.makeText(context, "Import successfully", Toast.LENGTH_LONG).show()
+            importConfirmOpen = false
+        }
+        else -> { }
     }
 
     Scaffold(
@@ -118,7 +132,7 @@ fun DBSettingsContent() {
                 HorizontalDivider()
                 FormColumn("Import database") {
                     JJJButton(
-                        onClick = { filePicker.launch(arrayOf("*/*")) }
+                        onClick = { filesPicker.launch(arrayOf("application/zip")) }
                     ) {
                         Text("Choose file")
                     }
@@ -127,19 +141,15 @@ fun DBSettingsContent() {
         }
         ExportConfirmDialog(
             exportConfirmOpen,
-            uri = selectedUri,
+            uri = exportFolderUri,
+            isLoading = exportDBState.isLoading,
             onConfirm = { onExportConfirm() },
             onClose = { exportConfirmOpen = false }
         )
         ImportConfirmDialog(
             importConfirmOpen,
-            file = fileToImport,
-            onConfirm = {
-                fileToImport?.let {
-                    val result = Utils.validateDatabaseSchema(it, DBSchema.schema)
-                    Log.i("JJJ", result.toString())
-                }
-            },
+            isLoading = importDBState.isLoading,
+            onConfirm = { onImportConfirm() },
             onClose = { importConfirmOpen = false }
         )
     }
@@ -149,6 +159,11 @@ fun DBSettingsContent() {
 @Composable
 private fun DBSettingsContentPreview() {
     JuiceJuiceJuiceTheme {
-        DBSettingsContent()
+        DBSettingsContent(
+            importDBState = UiState(data = Resource.Idle),
+            exportDBState = UiState(data = Resource.Idle),
+            onExport = { _, _ -> },
+            onImport = { _, _ -> }
+        )
     }
 }

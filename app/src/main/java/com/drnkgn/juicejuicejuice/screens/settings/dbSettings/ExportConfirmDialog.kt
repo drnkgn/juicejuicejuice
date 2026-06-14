@@ -22,6 +22,7 @@ import com.drnkgn.juicejuicejuice.utils.Utils
 fun ExportConfirmDialog(
     open: Boolean = false,
     uri: Uri? = null,
+    isLoading: Boolean = false,
     onConfirm: (() -> Unit),
     onClose: (() -> Unit)
 ) {
@@ -47,7 +48,7 @@ fun ExportConfirmDialog(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(),
-                // isLoading = isLoading,
+                isLoading = isLoading,
                 colors = JJJButtonColors.Primary,
                 onClick = onConfirm
             ) {

@@ -15,12 +15,15 @@ import javax.inject.Singleton
 object DatabaseModule {
     @Provides
     @Singleton
-    fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
-        return Room.databaseBuilder(
-            context,
-            AppDatabase::class.java,
-            "app_database"
-        )
-            .build()
+    fun provideDatabaseFactory(
+        @ApplicationContext context: Context
+    ): @JvmSuppressWildcards () -> AppDatabase {
+        return {
+            Room.databaseBuilder(
+                context,
+                AppDatabase::class.java,
+                "app_database"
+            ).build()
+        }
     }
 }
