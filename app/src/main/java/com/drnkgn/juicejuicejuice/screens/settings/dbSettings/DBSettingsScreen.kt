@@ -16,6 +16,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -26,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import com.drnkgn.juicejuicejuice.components.AppTopBar
 import com.drnkgn.juicejuicejuice.components.FormColumn
 import com.drnkgn.juicejuicejuice.components.JJJButton
+import com.drnkgn.juicejuicejuice.db.DBSchema
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
 import com.drnkgn.juicejuicejuice.utils.Utils
 import java.io.File
@@ -43,7 +45,7 @@ fun DBSettingsContent() {
     var importConfirmOpen by remember { mutableStateOf(false) }
 
     var selectedUri by remember { mutableStateOf<Uri?>(null) }
-    var fileToExport by remember { mutableStateOf<File?>(null) }
+    var filesToExport = remember { mutableStateListOf<List<File>>(emptyList()) }
     var fileToImport by remember { mutableStateOf<File?>(null) }
 
     val folderPicker = rememberLauncherForActivityResult(
@@ -52,6 +54,7 @@ fun DBSettingsContent() {
         uri?.let {
             selectedUri = it
             val databaseDir = File(context.filesDir.parent, "databases")
+            filesToExport
             fileToExport = File(databaseDir, "app_database")
             exportConfirmOpen = true
         }
@@ -131,7 +134,12 @@ fun DBSettingsContent() {
         ImportConfirmDialog(
             importConfirmOpen,
             file = fileToImport,
-            onConfirm = { },
+            onConfirm = {
+                fileToImport?.let {
+                    val result = Utils.validateDatabaseSchema(it, DBSchema.schema)
+                    Log.i("JJJ", result.toString())
+                }
+            },
             onClose = { importConfirmOpen = false }
         )
     }
