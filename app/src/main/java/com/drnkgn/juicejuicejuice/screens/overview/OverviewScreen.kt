@@ -1,29 +1,39 @@
 package com.drnkgn.juicejuicejuice.screens.overview
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingDown
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,26 +46,43 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.drnkgn.juicejuicejuice.components.AppBottomBar
 import com.drnkgn.juicejuicejuice.components.AppTopBar
 import com.drnkgn.juicejuicejuice.components.Chip
+import com.drnkgn.juicejuicejuice.components.ChipTrend
 import com.drnkgn.juicejuicejuice.components.calendar.Calendar
+import com.drnkgn.juicejuicejuice.db.dto.OverviewStatsDTO
 import com.drnkgn.juicejuicejuice.db.relations.TransactionWithTags
 import com.drnkgn.juicejuicejuice.enums.TransactionType
 import com.drnkgn.juicejuicejuice.fakes.FakeTransactions
+import com.drnkgn.juicejuicejuice.screens.EventViewModel
 import com.drnkgn.juicejuicejuice.states.Resource
+import com.drnkgn.juicejuicejuice.states.UIEvent
 import com.drnkgn.juicejuicejuice.states.UiState
+import com.drnkgn.juicejuicejuice.states.UiStateHolder
+import com.drnkgn.juicejuicejuice.states.getOrNull
+import com.drnkgn.juicejuicejuice.ui.theme.DangerA0
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
 import com.drnkgn.juicejuicejuice.ui.theme.extColors
 import java.time.LocalDate
+import java.util.Locale
+import kotlin.math.sign
 
 @Composable
 fun OverviewScreen(
     navController: NavController,
-    overviewViewModel: OverviewViewModel = hiltViewModel()
+    overviewViewModel: OverviewViewModel = hiltViewModel(),
+    eventViewModel: EventViewModel = hiltViewModel()
 ) {
-    val indexTransactionState by overviewViewModel.indexTransactionState.toCollect()
+    val indexTransactionStateHolder = overviewViewModel.indexTransactionState
+    val overviewStatsState by overviewViewModel.overviewStatsState.toCollect()
+
+    val eventBus by eventViewModel.eventBus.event.collectAsState(initial = UIEvent.NoEvent)
 
     fun refreshIndexedTransaction(
         date: LocalDate? = null,
@@ -67,7 +94,8 @@ fun OverviewScreen(
 
     OverviewContent(
         navController,
-        indexTransactionState,
+        indexTransactionStateHolder,
+        overviewStatsState,
         onRefreshIndexedTransaction = { date, type, withDeleted ->
             refreshIndexedTransaction(date, type, withDeleted)
         }
@@ -77,27 +105,37 @@ fun OverviewScreen(
 @Composable
 fun OverviewContent(
     navController: NavController,
-    indexTransactionState: UiState<List<TransactionWithTags>>,
+    indexTransactionStateHolder: UiStateHolder<List<TransactionWithTags>>,
+    overviewStatsState: UiState<OverviewStatsDTO>,
     onRefreshIndexedTransaction: (LocalDate, TransactionType?, Boolean) -> Unit
 ) {
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+
+    val indexTransactionState by indexTransactionStateHolder.toCollect()
+
     var filterOpen by remember { mutableStateOf(false) }
     var filters by remember { mutableStateOf(FilterTransactionResult(null, false)) }
 
     var selectedDate by rememberSaveable { mutableStateOf(LocalDate.now()) }
     var transactions by remember { mutableStateOf<List<TransactionWithTags>>(emptyList()) }
 
-    LaunchedEffect(indexTransactionState) {
-        when (indexTransactionState.data) {
-            is Resource.Success -> {
-                transactions = indexTransactionState.data.data
-            }
-            else -> { }
+    fun isNoFiltersSelected(): Boolean {
+        return FilterTransactionResult(null, false) == filters
+    }
+
+    when (indexTransactionState.data) {
+        is Resource.Success -> {
+            transactions = (indexTransactionState.data as Resource.Success<List<TransactionWithTags>>).data
+            indexTransactionStateHolder.set(data = Resource.Idle)
         }
+        else -> { }
     }
 
     LaunchedEffect(Unit) {
-        if (indexTransactionState.data is Resource.Idle) {
-            onRefreshIndexedTransaction(selectedDate, filters.transactionType, filters.deleted)
+        lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            if (indexTransactionState.data is Resource.Idle) {
+                onRefreshIndexedTransaction(selectedDate, filters.transactionType, filters.deleted)
+            }
         }
     }
 
@@ -105,13 +143,25 @@ fun OverviewContent(
         topBar = {
             AppTopBar(title = "Home") {
                 Row {
-                    IconButton(
-                        onClick = { filterOpen = true }
+                    BadgedBox(
+                        badge = {
+                            if (!isNoFiltersSelected()) {
+                                Badge(
+                                    containerColor = DangerA0,
+                                    modifier = Modifier
+                                        .offset(x = (-13).dp, y = (13).dp)
+                                )
+                            }
+                        }
                     ) {
-                        Icon(
-                            Icons.Filled.FilterList,
-                            contentDescription = "filter",
-                        )
+                        IconButton(
+                            onClick = { filterOpen = true }
+                        ) {
+                            Icon(
+                                Icons.Filled.FilterList,
+                                contentDescription = "filter",
+                            )
+                        }
                     }
                     IconButton(
                         onClick = { navController.navigate("settings") }
@@ -122,18 +172,6 @@ fun OverviewContent(
                         )
                     }
                 }
-            }
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                onClick = { navController.navigate("transactions/new") }
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Add"
-                )
             }
         }
     ) { innerPadding ->
@@ -148,7 +186,11 @@ fun OverviewContent(
                     .padding(bottom = 20.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                TopCard(modifier = Modifier.weight(1f)) {
+                TopCard(
+                    modifier = Modifier
+                        .height(100.dp)
+                        .weight(1f)
+                ) {
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.SpaceBetween
@@ -162,13 +204,36 @@ fun OverviewContent(
                                 Icons.AutoMirrored.Filled.TrendingUp,
                                 contentDescription = "Income"
                             )
-                            Chip(text = "+12%")
+
+                            val incomePctDiff = overviewStatsState.getOrNull()?.incomePctDiff ?: 0f
+                            Chip(
+                                text = "%.1f%%".format(Locale.UK, incomePctDiff),
+                                color = when {
+                                    incomePctDiff == 0f -> ChipTrend.Neutral
+                                    incomePctDiff.sign == -1.0f -> ChipTrend.Positive
+                                    incomePctDiff.sign == 1.0f -> ChipTrend.Negative
+                                    else -> ChipTrend.Neutral
+                                },
+                                trend = when {
+                                    incomePctDiff == 0f -> ChipTrend.Neutral
+                                    incomePctDiff.sign == -1.0f -> ChipTrend.Negative
+                                    incomePctDiff.sign == 1.0f -> ChipTrend.Positive
+                                    else -> ChipTrend.Neutral
+                                }
+                            )
                         }
                         Text("Income")
-                        Text("$487.30", fontWeight = FontWeight.Bold, fontSize = 22.sp)
+                        Text(
+                            text = "$%.2f".format(Locale.UK, overviewStatsState.getOrNull()?.income ?: 0f),
+                            fontWeight = FontWeight.Bold, fontSize = 22.sp
+                        )
                     }
                 }
-                TopCard(modifier = Modifier.weight(1f)) {
+                TopCard(
+                    modifier = Modifier
+                        .height(100.dp)
+                        .weight(1f)
+                ) {
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.SpaceBetween
@@ -179,13 +244,32 @@ fun OverviewContent(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                Icons.AutoMirrored.Filled.TrendingDown,
+                                imageVector = Icons.AutoMirrored.Filled.TrendingDown,
                                 contentDescription = "Expense"
                             )
-                            Chip(text = "-5%", variant = "error")
+
+                            val expensePctDiff = overviewStatsState.getOrNull()?.expensePctDiff ?: 0f
+                            Chip(
+                                text = "%.1f%%".format(Locale.UK, expensePctDiff),
+                                color = when {
+                                    expensePctDiff == 0f -> ChipTrend.Neutral
+                                    expensePctDiff.sign == -1.0f -> ChipTrend.Positive
+                                    expensePctDiff.sign == 1.0f -> ChipTrend.Negative
+                                    else -> ChipTrend.Neutral
+                                },
+                                trend = when {
+                                    expensePctDiff == 0f -> ChipTrend.Neutral
+                                    expensePctDiff.sign == -1.0f -> ChipTrend.Negative
+                                    expensePctDiff.sign == 1.0f -> ChipTrend.Positive
+                                    else -> ChipTrend.Neutral
+                                }
+                            )
                         }
                         Text("Expense")
-                        Text("$1,475.30", fontWeight = FontWeight.Bold, fontSize = 22.sp)
+                        Text(
+                            text = "$%.2f".format(Locale.UK, overviewStatsState.getOrNull()?.expense ?: 0f),
+                            fontWeight = FontWeight.Bold, fontSize = 22.sp
+                        )
                     }
                 }
             }
@@ -233,14 +317,20 @@ fun OverviewContent(
     }
 }
 
+@Composable
+fun OverviewContentMock() {
+    OverviewContent(
+        rememberNavController(),
+        UiStateHolder(initial = Resource.Success(FakeTransactions.fakeTransactions)),
+        UiState(data = Resource.Success(OverviewStatsDTO(9f, 8f, 12.5f, -5.3f))),
+        onRefreshIndexedTransaction = { _, _, _ -> }
+    )
+}
+
 @Preview
 @Composable
-fun OverviewContentPreview() {
+private fun OverviewContentPreview() {
     JuiceJuiceJuiceTheme {
-        OverviewContent(
-            rememberNavController(),
-            UiState(data = Resource.Success(FakeTransactions.fakeTransactions)),
-            onRefreshIndexedTransaction = { _, _, _ -> }
-        )
+        OverviewContentMock()
     }
 }

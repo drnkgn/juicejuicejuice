@@ -2,21 +2,22 @@ package com.drnkgn.juicejuicejuice.screens.settings.tagSettings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.drnkgn.juicejuicejuice.db.AppDatabase
 import com.drnkgn.juicejuicejuice.db.entities.Tag
+import com.drnkgn.juicejuicejuice.DatabaseManager
 import com.drnkgn.juicejuicejuice.states.Resource
 import com.drnkgn.juicejuicejuice.states.UiStateHolder
 import com.drnkgn.juicejuicejuice.utils.Utils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @HiltViewModel
 class TagSettingsViewModel @Inject constructor(
-    database: AppDatabase
+    databaseManager: DatabaseManager
 ): ViewModel() {
+    private val database = databaseManager.getDb()
+
     private val tagDao = database.tag()
 
     val createTagState = UiStateHolder<Unit>(Resource.Idle)

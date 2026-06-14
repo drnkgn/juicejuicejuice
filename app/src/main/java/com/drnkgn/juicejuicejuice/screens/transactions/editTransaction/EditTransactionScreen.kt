@@ -84,6 +84,7 @@ fun EditTransactionScreen(
     transactionId: Int? = null
 ) {
     val updateTransactionState by transactionViewModel.updateTransactionState.toCollect()
+    val removeTransactionState by transactionViewModel.removeTransactionState.toCollect()
     val getAllTagsState by transactionViewModel.getAllTagsState.toCollect()
     val getTransactionState by transactionViewModel.getTransactionState.toCollect()
 
@@ -96,11 +97,15 @@ fun EditTransactionScreen(
         getAllTagsState,
         getTransactionState,
         updateTransactionState,
+        removeTransactionState,
         handleGetAllTags = { type ->
             transactionViewModel.indexTags(type)
         },
         onUpdate = { transaction, tags ->
             transactionViewModel.updateTransactionTags(transaction, tags)
+        },
+        onDelete = { transaction ->
+            transactionViewModel.removeTransaction(transaction)
         }
     )
 }
@@ -112,8 +117,10 @@ fun EditTransactionContent(
     getAllTagsState: UiState<List<Tag>>,
     getTransactionState: UiState<TransactionWithTags>,
     updateTransactionState: UiState<Unit>,
+    removeTransactionState: UiState<Unit>,
     handleGetAllTags: (TransactionType) -> Unit,
     onUpdate: (Transaction, List<Tag>) -> Unit,
+    onDelete: (Transaction) -> Unit
 ) {
     val context = LocalContext.current
     val calender = Calendar.getInstance()
@@ -196,6 +203,13 @@ fun EditTransactionContent(
         else -> { }
     }
 
+    when (removeTransactionState.data) {
+        is Resource.Success -> {
+            navController.popBackStack()
+        }
+        else -> { }
+    }
+
     when (getAllTagsState.data) {
         is Resource.Success -> {
             tags = getAllTagsState.data.data
@@ -252,7 +266,7 @@ fun EditTransactionContent(
                             DropdownMenuItem(
                                 text = {
                                     Text(
-                                        "Remove tag",
+                                        "Delete transaction",
                                         color = MaterialTheme.colorScheme.onSecondaryContainer
                                     )
                                 },
@@ -459,6 +473,21 @@ fun EditTransactionContent(
                     onConfirm = { staged -> selectedTags = staged.toList() },
                     onClose = { tagsOpen = false }
                 )
+                DeleteTransactionDialog(
+                    open = removeTransactionDialogOpened,
+                    onClose = { removeTransactionDialogOpened = false },
+                    onConfirm = {
+                        onDelete(
+                            Transaction(
+                                id = transactionId,
+                                type = transactionType,
+                                amount = amount.toFloatOrNull() ?: 0f,
+                                transactionAt = LocalDateTime.of(selectedDate, selectedTime),
+                                description = description
+                            )
+                        )
+                    }
+                )
             }
         }
     }
@@ -474,9 +503,11 @@ fun EditTransactionContentPreview() {
             getTransactionState = UiState(
                 data = Resource.Success(FakeTransactions.fakeTransactions.first())
             ),
+            removeTransactionState = UiState(data = Resource.Idle),
             updateTransactionState = UiState(data = Resource.Idle),
             handleGetAllTags = { },
-            onUpdate = { _, _ ->  }
+            onUpdate = { _, _ ->  },
+            onDelete = { _ ->  }
         )
     }
 }

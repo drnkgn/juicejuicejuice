@@ -1,9 +1,11 @@
 package com.drnkgn.juicejuicejuice.db.dao
 
+import android.annotation.SuppressLint
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
+import androidx.room.util.TableInfo
 import com.drnkgn.juicejuicejuice.db.entities.Tag
 import com.drnkgn.juicejuicejuice.enums.TransactionType
 

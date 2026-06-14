@@ -3,6 +3,7 @@ package com.drnkgn.juicejuicejuice.db.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import com.drnkgn.juicejuicejuice.db.entities.Transaction as TransactionEnt
 import com.drnkgn.juicejuicejuice.db.relations.TransactionWithTags
@@ -10,6 +11,7 @@ import com.drnkgn.juicejuicejuice.enums.TransactionType
 
 @Dao
 interface TransactionDAO {
+    @Transaction
     @Query("""
         SELECT * FROM transactions
         WHERE (:date IS NULL AND DATE(transaction_at) = CURRENT_DATE OR DATE(transaction_at) = :date)

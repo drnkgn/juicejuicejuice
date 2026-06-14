@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -118,6 +119,10 @@ fun TransactionItem(
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             lineHeight = 14.sp,
+                            textDecoration = when {
+                                transactionWithTags.transaction.deletedAt == null -> null
+                                else -> TextDecoration.LineThrough
+                            },
                         )
                         Text(
                             text = transactionWithTags.transaction.transactionAt.format(DateTimeFormatter.ofPattern("hh.mm a")),

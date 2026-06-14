@@ -1,8 +1,6 @@
 package com.drnkgn.juicejuicejuice.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -10,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -23,24 +22,34 @@ import androidx.compose.ui.unit.sp
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
 import com.drnkgn.juicejuicejuice.ui.theme.extColors
 
+enum class ChipTrend {
+    Positive,
+    Negative,
+    Neutral
+}
+
 @Composable
-fun getColorMap(variant: String = "success"): List<Color> {
+fun getColorMap(variant: ChipTrend): List<Color> {
     return when (variant) {
-        "success" -> {
+        ChipTrend.Positive -> {
             listOf(MaterialTheme.extColors.success, MaterialTheme.extColors.onSuccess)
         }
-        "error" -> {
+        ChipTrend.Negative -> {
             listOf(MaterialTheme.colorScheme.error, MaterialTheme.colorScheme.onError)
         }
-        else -> {
-            listOf(MaterialTheme.extColors.success, MaterialTheme.extColors.onSuccess)
+        ChipTrend.Neutral -> {
+            listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.onPrimary)
         }
     }
 }
 
 @Composable
-fun Chip(text: String = "", variant: String = "success") {
-    val colorMap = getColorMap(variant)
+fun Chip(
+    text: String = "",
+    color: ChipTrend = ChipTrend.Positive,
+    trend: ChipTrend = ChipTrend.Positive
+) {
+    val colorMap = getColorMap(color)
 
     Row(
         modifier = Modifier
@@ -51,9 +60,10 @@ fun Chip(text: String = "", variant: String = "success") {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
-            when (variant) {
-                "success" -> Icons.Default.ExpandLess
-                else -> Icons.Default.ExpandMore
+            when (trend) {
+                ChipTrend.Positive -> Icons.Default.ExpandLess
+                ChipTrend.Negative -> Icons.Default.ExpandMore
+                ChipTrend.Neutral -> Icons.Default.Remove
             },
             contentDescription = "Extra label",
             tint = colorMap[1],
