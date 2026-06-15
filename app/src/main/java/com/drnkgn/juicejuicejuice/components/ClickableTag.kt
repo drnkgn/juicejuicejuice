@@ -59,7 +59,6 @@ fun ClickableTag(
                     ClickableTagVariant.Outline -> JJJOutlinedButtonVariant.Filled
                     ClickableTagVariant.OutlineLight -> JJJOutlinedButtonVariant.Light
                     ClickableTagVariant.OutlineContrast -> JJJOutlinedButtonVariant.Transparent
-                    else -> JJJOutlinedButtonVariant.Transparent
                 },
                 shape = RoundedCornerShape(50.dp),
                 onClick = onClick
