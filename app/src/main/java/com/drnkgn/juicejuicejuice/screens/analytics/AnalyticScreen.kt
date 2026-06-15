@@ -12,34 +12,81 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingDown
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.drnkgn.juicejuicejuice.components.AppTopBar
 import com.drnkgn.juicejuicejuice.components.Chip
 import com.drnkgn.juicejuicejuice.components.ChipTrend
+import com.drnkgn.juicejuicejuice.db.dto.DailySpend
+import com.drnkgn.juicejuicejuice.db.dto.TagSpend
 import com.drnkgn.juicejuicejuice.screens.overview.TopCard
+import com.drnkgn.juicejuicejuice.states.Resource
+import com.drnkgn.juicejuicejuice.states.UiState
 import com.drnkgn.juicejuicejuice.states.getOrNull
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
+import java.time.LocalDate
 import java.util.Locale
 import kotlin.math.sign
 
 @Composable
-fun AnalyticScreen(navController: NavController) {
-    AnalyticContent()
+fun AnalyticScreen(
+    navController: NavController,
+    analyticViewModel: AnalyticViewModel = hiltViewModel()
+) {
+    val dailySpendingState by analyticViewModel.dailySpendingState.toCollect()
+    val tagSpendingState by analyticViewModel.tagSpendingState.toCollect()
+
+    LaunchedEffect(Unit) {
+        analyticViewModel.getDailySpending(LocalDate.now())
+        analyticViewModel.getSpendingByTags(LocalDate.now())
+    }
+
+    AnalyticContent(
+        dailySpendingState,
+        tagSpendingState
+    )
 }
 
 @Composable
-fun AnalyticContent() {
+fun AnalyticContent(
+    dailySpendingState: UiState<List<DailySpend>>,
+    tagSpendingState: UiState<List<TagSpend>>
+) {
+    var dailySpending by remember { mutableStateOf((0..6).map { DailySpend(it, 0f) }) }
+    var tagSpending by remember { mutableStateOf<List<TagSpend>>(emptyList()) }
+
+    when (dailySpendingState.data) {
+        is Resource.Success -> {
+            dailySpending = dailySpendingState.data.data
+        }
+        else -> { }
+    }
+
+    when (tagSpendingState.data) {
+        is Resource.Success -> {
+            tagSpending = tagSpendingState.data.data
+        }
+        else -> { }
+    }
+
     Scaffold(
         topBar = {
             AppTopBar(title = "Analytics")
@@ -149,14 +196,24 @@ fun AnalyticContent() {
             ) {
                 Text("Daily Spending", color = MaterialTheme.colorScheme.secondary)
                 Spacer(modifier = Modifier.height(20.dp))
-                AnalyticByDays()
+                AnalyticByDays(dailySpending)
             }
             Spacer(modifier = Modifier.height(20.dp))
             TopCard(
                 modifier = Modifier.fillMaxWidth(),
                 paddingValues = PaddingValues(20.dp)
             ) {
-                AnalyticByTags()
+                when {
+                    tagSpendingState.isLoading -> {
+                        CircularProgressIndicator()
+                    }
+                    tagSpending.isEmpty() -> {
+                        Text("No spending data yet")
+                    }
+                    else -> {
+                        AnalyticByTags(tagSpending)
+                    }
+                }
             }
         }
     }
@@ -166,6 +223,9 @@ fun AnalyticContent() {
 @Composable
 fun AnalyticContentPreview() {
     JuiceJuiceJuiceTheme {
-        AnalyticContent()
+        AnalyticContent(
+            dailySpendingState = UiState(data = Resource.Idle),
+            tagSpendingState = UiState(data = Resource.Idle),
+        )
     }
 }

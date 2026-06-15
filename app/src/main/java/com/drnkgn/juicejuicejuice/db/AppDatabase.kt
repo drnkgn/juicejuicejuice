@@ -5,6 +5,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.drnkgn.juicejuicejuice.db.converters.DateTimeConverters
 import com.drnkgn.juicejuicejuice.db.converters.EnumConverters
+import com.drnkgn.juicejuicejuice.db.dao.AnalyticsDAO
 import com.drnkgn.juicejuicejuice.db.dao.TagDAO
 import com.drnkgn.juicejuicejuice.db.dao.TransactionDAO
 import com.drnkgn.juicejuicejuice.db.dao.TransactionTagsDao
@@ -28,4 +29,6 @@ abstract class AppDatabase: RoomDatabase() {
     abstract fun transaction(): TransactionDAO
 
     abstract fun tag(): TagDAO
+
+    abstract fun analytics(): AnalyticsDAO
 }

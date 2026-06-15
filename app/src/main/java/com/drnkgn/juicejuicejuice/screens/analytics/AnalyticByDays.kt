@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.drnkgn.juicejuicejuice.db.dto.DailySpend
 import com.drnkgn.juicejuicejuice.ui.theme.JuiceJuiceJuiceTheme
 import com.drnkgn.juicejuicejuice.ui.theme.SurfaceA20
 import com.drnkgn.juicejuicejuice.ui.theme.extColors
@@ -46,16 +47,20 @@ private fun weekDaysMap(idx: Float) = when (idx) {
 
 @OptIn(ExperimentalKoalaPlotApi::class)
 @Composable
-fun AnalyticByDays() {
-    val barChartEntries = listOf(
-        DefaultVerticalBarPlotEntry(0f, DefaultBarPosition(0f, 0.1f)),
-        DefaultVerticalBarPlotEntry(1f, DefaultBarPosition(0f, 0.2f)),
-        DefaultVerticalBarPlotEntry(2f, DefaultBarPosition(0f, 0.3f)),
-        DefaultVerticalBarPlotEntry(3f, DefaultBarPosition(0f, 0.4f)),
-        DefaultVerticalBarPlotEntry(4f, DefaultBarPosition(0f, 0.5f)),
-        DefaultVerticalBarPlotEntry(5f, DefaultBarPosition(0f, 0.6f)),
-        DefaultVerticalBarPlotEntry(6f, DefaultBarPosition(0f, 0.7f)),
-    )
+fun AnalyticByDays(dailySpending: List<DailySpend>) {
+    val highestSum = dailySpending.maxBy { it.amountSum }
+    val barChartEntries = dailySpending.map { dailySpend ->
+        DefaultVerticalBarPlotEntry(
+            dailySpend.dayOfWeek.toFloat(),
+            DefaultBarPosition(
+                0f,
+                if (highestSum.amountSum == 0f)
+                    0f
+                else
+                    dailySpend.amountSum/highestSum.amountSum
+            )
+        )
+    }
 
     ChartLayout {
         XYGraph(
@@ -123,6 +128,14 @@ fun AnalyticByDays() {
 @Composable
 private fun AnalyticByDaysPreview() {
     JuiceJuiceJuiceTheme {
-        AnalyticByDays()
+        AnalyticByDays(listOf(
+            DailySpend(0, 0.1f),
+            DailySpend(1, 0.2f),
+            DailySpend(2, 0.3f),
+            DailySpend(3, 0.4f),
+            DailySpend(4, 0.5f),
+            DailySpend(5, 0.6f),
+            DailySpend(6, 0.7f),
+        ))
     }
 }

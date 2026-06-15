@@ -38,7 +38,7 @@ android {
 
     buildTypes {
         debug {
-            isDebuggable = true
+            isDebuggable = false
             isMinifyEnabled = false
             applicationIdSuffix = ".dev"
             resValue("string", "app_name", "JuiceJuiceJuice (Dev)")

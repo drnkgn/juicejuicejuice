@@ -25,6 +25,7 @@ interface TransactionDAO {
         withDeleted: Boolean = false
     ): List<TransactionWithTags>
 
+    @Transaction
     @Query("SELECT * FROM transactions WHERE id = :id")
     suspend fun getTransactionWithTagsById(id: Int): TransactionWithTags?
 
